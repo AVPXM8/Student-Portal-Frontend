@@ -89,4 +89,4 @@ npm run start
 - **Inter-linking:** sidebar widgets and breadcrumbs ensure high link equity across the portal.
 
 ---
-© 2025 Maarula Classes - Mathem Solvex. All rights reserved.
+© 2026 Maarula Classes - Mathem Solvex. All rights reserved.
