@@ -102,23 +102,28 @@ const Header = () => {
       <div className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.isOpen : ''}`}>
         <nav className={styles.mobileNav}>
           <Link href="/" className={pathname === '/' ? styles.active : ''} onClick={closeMobileMenu}>Home</Link>
-          <Link href="/questions" className={pathname === '/questions' ? styles.active : ''} onClick={closeMobileMenu}>All PYQs</Link>
-          <Link href="/questions?exam=NIMCET" onClick={closeMobileMenu}>NIMCET PYQs</Link>
-          <Link href="/questions?exam=CUET PG" onClick={closeMobileMenu}>CUET PG PYQs</Link>
-          <Link href="/questions?exam=JAMIA" onClick={closeMobileMenu}>JAMIA PYQs</Link>
-          <Link href="/questions?exam=MAH-CET" onClick={closeMobileMenu}>MAH-CET PYQs</Link>
-          <Link href="/questions?exam=AMU" onClick={closeMobileMenu}>AMU PYQs</Link>
-          <Link href="/questions?exam=VITMEE" onClick={closeMobileMenu}>VITMEE PYQs</Link>
-          <div className={styles.mobileDivider}></div>
-          <Link href="/resources" className={pathname === '/resources' ? styles.active : ''} onClick={closeMobileMenu}>PYQ Paper Downloads</Link>
-          <Link href="/test" className={pathname === '/test' ? styles.active : ''} onClick={closeMobileMenu}>Practice Paper</Link>
-          <div className={styles.mobileDivider}></div>
-          <Link href="/articles" className={pathname === '/articles' ? styles.active : ''} onClick={closeMobileMenu}>Latest Update</Link>
-          <a href="https://maarulaclasses.classx.co.in/new-courses" target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu}>Our Courses</a>
-          <a href="https://maarulaclasses.classx.co.in/test-series" target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu}>Test Series</a>
-          <Link href="/results" className={pathname === '/results' ? styles.active : ''} onClick={closeMobileMenu}>Our Results</Link>
-          <Link href="/about" className={pathname === '/about' ? styles.active : ''} onClick={closeMobileMenu}>About Us</Link>
-          <Link href="/contact" className={pathname === '/contact' ? styles.active : ''} onClick={closeMobileMenu}>Contact Us</Link>
+          
+          <div className={styles.mobileSectionTitle}>Question Archive</div>
+          <Link href="/questions" className={pathname.startsWith('/questions') && !pathname.includes('exam=') ? styles.active : ''} onClick={closeMobileMenu}>Explore All PYQs</Link>
+          <Link href="/questions?exam=NIMCET" onClick={closeMobileMenu}>NIMCET</Link>
+          <Link href="/questions?exam=CUET PG" onClick={closeMobileMenu}>CUET PG</Link>
+          <Link href="/questions?exam=JAMIA" onClick={closeMobileMenu}>JAMIA</Link>
+          <Link href="/questions?exam=MAH-CET" onClick={closeMobileMenu}>MAH-CET</Link>
+          <Link href="/questions?exam=AMU" onClick={closeMobileMenu}>AMU</Link>
+          <Link href="/questions?exam=VITMEE" onClick={closeMobileMenu}>VITMEE</Link>
+          
+          <div className={styles.mobileSectionTitle}>Downloads & Practice</div>
+          <Link href="/resources" className={pathname.startsWith('/resources') ? styles.active : ''} onClick={closeMobileMenu}>PDF Material Downloads</Link>
+          <Link href="/test" className={pathname.startsWith('/test') ? styles.active : ''} onClick={closeMobileMenu}>Solve Practice Paper</Link>
+          
+          <div className={styles.mobileSectionTitle}>Quick Links</div>
+          <Link href="/articles" className={pathname.startsWith('/articles') ? styles.active : ''} onClick={closeMobileMenu}>Latest Updates</Link>
+          <Link href="/results" className={pathname.startsWith('/results') ? styles.active : ''} onClick={closeMobileMenu}>Exam Results</Link>
+          <a href="https://maarulaclasses.classx.co.in/new-courses" target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu}>Our Premium Courses</a>
+          
+          <div className={styles.mobileSectionTitle}>About Mathem</div>
+          <Link href="/about" className={pathname === '/about' ? styles.active : ''} onClick={closeMobileMenu}>About Mathem Solvex</Link>
+          <Link href="/contact" className={pathname === '/contact' ? styles.active : ''} onClick={closeMobileMenu}>Contact Support</Link>
         </nav>
       </div>
     </header>
