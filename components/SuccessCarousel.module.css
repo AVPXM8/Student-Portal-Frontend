@@ -1,0 +1,53 @@
+.carouselContainer{
+  width: 100%;
+  margin: 0 auto 60px;
+  overflow: hidden;
+  max-width: 1800px; /* Cinematic ultra-wide width for laptops */
+}
+
+/* Flexibly container that grows to fit the full image height */
+.aspectBox{
+  position: relative;
+  width: 100%;
+  max-height: 850px; /* Increased max height significantly for a larger banner */
+  background: #fdfdfd;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Show the FULL image without ANY cropping */
+.bannerImage{
+  width: 100%;
+  height: auto;
+  max-height: 750px; /* Increased high-impact height */
+  object-fit: fill; /* Since these are tailored banners, fill the cinematic container */
+  object-position: center;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .carouselContainer {
+    margin-bottom: 30px;
+  }
+}
+
+/* Slick dots (good contrast on banners) */
+.carouselContainer :global(.slick-dots){
+  bottom:12px;
+}
+.carouselContainer :global(.slick-dots li button:before){
+  font-size:10px;
+  color:#111827;
+  opacity:.35;
+}
+.carouselContainer :global(.slick-dots li.slick-active button:before){
+  color:#111827;
+  opacity:.9;
+}
+
+/* Remove outlines from slides on click */
+.carouselContainer :global(.slick-slide){
+  outline:none;
+}

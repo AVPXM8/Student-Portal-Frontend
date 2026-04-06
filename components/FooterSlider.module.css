@@ -1,0 +1,103 @@
+.footerSliderSection {
+    background: #1e293b;
+    padding: 30px 0;
+    overflow: hidden;
+    color: #fff;
+    text-align: center;
+  }
+  
+  .sliderTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .scrollerContainer {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  
+  .scroller {
+    display: inline-flex;
+    animation: scroll 30s linear infinite;
+  }
+  
+  .slide {
+    flex: 0 0 auto;
+    width: 140px;
+    margin: 0 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background: #0f172a;
+    transition: transform 0.3s ease;
+  }
+  
+  .slide:hover {
+    transform: scale(1.05);
+    z-index: 10;
+  }
+  
+  .imageWrapper {
+    width: 100%;
+    aspect-ratio: 1/1;
+    position: relative;
+  }
+  
+  .studentImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    padding: 8px 4px;
+    text-align: center;
+    color: white;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    pointer-events: none;
+  }
+  
+  .studentName {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .studentRank {
+    font-size: 0.65rem;
+    color: #fbbf24;
+    font-weight: 700;
+  }
+  
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  
+  /* Pause on hover */
+  .scrollerContainer:hover .scroller {
+    animation-play-state: paused;
+  }
+  
+  @media (max-width: 768px) {
+    .slide { width: 100px; }
+    .sliderTitle { font-size: 1rem; }
+  }
+  
