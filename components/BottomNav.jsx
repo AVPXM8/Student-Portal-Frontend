@@ -23,7 +23,9 @@ const BottomNav = () => {
     <nav className={styles.bottomNav}>
       <div className={styles.container}>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          const isActive = pathname === item.href || 
+            (item.href !== '/' && pathname.startsWith(item.href)) ||
+            (item.href === '/questions' && pathname.startsWith('/question'));
           return (
             <Link key={item.href} href={item.href} className={`${styles.navItem} ${isActive ? styles.active : ''}`}>
               <item.icon size={22} className={styles.icon} />

@@ -524,7 +524,7 @@ const QuestionLibraryPage = () => {
           itemListElement: (questions.slice(0, 20) || []).map((q, idx) => ({
             '@type': 'ListItem',
             position: idx + 1 + (currentPage - 1) * limit,
-            url: absUrl(sanitizePath(`/questions/${q?._id}`)),
+            url: absUrl(sanitizePath(`/question/${q?._id}`)),
             name: (q?.questionText || 'Question').slice(0, 120),
           })),
         }
@@ -1015,7 +1015,7 @@ const QuestionLibraryPage = () => {
             ) : questions.length > 0 ? (
               <>
                 {questions.map((q) => (
-                  <Link href={`/questions/${q?._id}`} key={q?._id} className={styles.questionCard}>
+                  <Link href={`/question/${q?._id}`} key={q?._id} className={styles.questionCard}>
                     <div className={styles.tags}>
                       {q?.exam && <span className={styles.tag}>{q.exam}</span>}
                       {q?.subject && <span className={styles.tag}>{q.subject}</span>}

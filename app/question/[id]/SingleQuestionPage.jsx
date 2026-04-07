@@ -19,7 +19,7 @@ const toPlainText = (s = '') => {
     .replace(/<[^>]+>/g, ' ')
     .replace(/\$+[^$]*\$+/g, ' ')
     .replace(/\\\[.*?\\\]/gs, ' ')
-    .replace(/\\\((.|\n)*?\\\)/g, ' ');
+    .replace(/\\\((.|\\n)*?\\\)/g, ' ');
   const decoded = noTags
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -200,7 +200,7 @@ export default function SingleQuestionPage() {
                 </button>
               )}
               {related.length > 0 && (
-                   <Link href={`/questions/${related[0]._id}`} className={styles.nextBtn}>
+                   <Link href={`/question/${related[0]._id}`} className={styles.nextBtn}>
                      Next Question &raquo;
                    </Link>
                 )}
@@ -232,7 +232,7 @@ export default function SingleQuestionPage() {
           <div className={styles.sidebarBlock}>
             <h3>Related Questions</h3>
             {related.map(r => (
-              <Link key={r._id} href={`/questions/${r._id}`} className={styles.relatedItem}>
+              <Link key={r._id} href={`/question/${r._id}`} className={styles.relatedItem}>
                 <MathPreview latexString={(r.questionText || '').slice(0, 80) + '...'} />
               </Link>
             ))}

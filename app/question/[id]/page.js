@@ -33,7 +33,7 @@ export async function generateMetadata({ params }) {
     const title = `${examLabel} ${yearLabel} ${subjectLabel} PYQ — ${titleSnippet}… | Mathem Solvex`;
     const description = `Practice this ${subjectLabel} question from ${examLabel} ${yearLabel} with step-by-step solution and video explanation. ${plainText}`;
     const image = question.questionImageURL || "https://res.cloudinary.com/dwmj6up6j/image/upload/v1752687380/rqtljy0wi1uzq3itqxoe.png";
-    const url = `${SITE_URL}/questions/${id}`;
+    const url = `${SITE_URL}/question/${id}`;
 
     return {
       title,

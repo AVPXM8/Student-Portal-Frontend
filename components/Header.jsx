@@ -60,7 +60,7 @@ const Header = () => {
           <Link href="/" className={pathname === '/' ? styles.active : ''}>Home</Link>
 
           <div className={styles.dropdown}>
-            <Link href="/questions" className={`${styles.dropdownToggle} ${pathname.startsWith('/questions') ? styles.active : ''}`}>Previous Year Questions <ChevronDown size={16} /></Link>
+            <Link href="/questions" className={`${styles.dropdownToggle} ${(pathname.startsWith('/questions') || pathname.startsWith('/question')) ? styles.active : ''}`}>Previous Year Questions <ChevronDown size={16} /></Link>
             <div className={styles.dropdownMenu}>
               <Link href="/questions?exam=NIMCET">NIMCET</Link>
               <Link href="/questions?exam=CUET PG">CUET PG</Link>
@@ -104,7 +104,7 @@ const Header = () => {
           <Link href="/" className={pathname === '/' ? styles.active : ''} onClick={closeMobileMenu}>Home</Link>
           
           <div className={styles.mobileSectionTitle}>Question Archive</div>
-          <Link href="/questions" className={pathname.startsWith('/questions') && !pathname.includes('exam=') ? styles.active : ''} onClick={closeMobileMenu}>Explore All PYQs</Link>
+          <Link href="/questions" className={(pathname.startsWith('/questions') || pathname.startsWith('/question')) && !pathname.includes('exam=') ? styles.active : ''} onClick={closeMobileMenu}>Explore All PYQs</Link>
           <Link href="/questions?exam=NIMCET" onClick={closeMobileMenu}>NIMCET</Link>
           <Link href="/questions?exam=CUET PG" onClick={closeMobileMenu}>CUET PG</Link>
           <Link href="/questions?exam=JAMIA" onClick={closeMobileMenu}>JAMIA</Link>

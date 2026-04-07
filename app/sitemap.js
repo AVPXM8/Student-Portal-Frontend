@@ -26,7 +26,7 @@ export default async function sitemap() {
       // Question pages
       if (data.questions?.length) {
         questionRoutes = data.questions.map((q) => ({
-          url: `${SITE_URL}/questions/${q._id}`,
+          url: `${SITE_URL}/question/${q._id}`,
           lastModified: q.updatedAt ? new Date(q.updatedAt) : new Date(),
           changeFrequency: 'weekly',
           priority: 0.7,
