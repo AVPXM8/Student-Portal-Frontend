@@ -2,6 +2,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import ConditionalLayout from "@/components/ConditionalLayout";
+import Analytics from "@/components/Analytics";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -57,8 +58,25 @@ export default function RootLayout({ children }) {
           src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
           strategy="afterInteractive"
         />
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-18RJ7KXPK4"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-18RJ7KXPK4', {
+              send_page_view: false,
+            });
+          `}
+        </Script>
       </head>
       <body suppressHydrationWarning>
+        <Analytics />
         <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
