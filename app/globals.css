@@ -37,6 +37,8 @@
 
   /* Layout */
   --header-height: 72px;
+  --top-bar-height: 42px;
+  --full-header-height: 114px;
   --bottom-nav-height: 72px;
 }
 
@@ -57,7 +59,8 @@ body {
 
 .main-content-wrapper {
   min-height: calc(100vh - var(--header-height));
-  padding-bottom: 0; /* Default */
+  position: relative;
+  z-index: 1;
 }
 
 /* App-like feel on mobile */

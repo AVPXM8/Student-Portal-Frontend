@@ -654,37 +654,52 @@ const QuestionLibraryPage = () => {
 
       {/* Hero / Intro */}
       <section className={styles.heroSection}>
-        <h1>MCA Entrance Previous Year Question Bank (PYQs)</h1>
+        <h1>MCA Entrance <span>Previous Year Question Bank</span></h1>
         <p className={styles.subheading}>
-          Practice 17 years of solved questions from NIMCET, CUET PG, and more.
-          Each problem includes detailed, step-by-step solutions to help you prepare smarter.
+          Master your MCA entrance preparation with over 17 years of solved PYQs from NIMCET, CUET PG, and top universities. 
+          Get detailed step-by-step solutions and expert insights—all 100% free.
         </p>
 
-        <h3>What you’ll find here</h3>
         <ul className={styles.benefitList}>
-          <li>Topic-wise PYQs mapped to the latest exam patterns</li>
-          <li>Step-by-step solutions, many with concise video explanations</li>
-          <li>Fast filters and search to target your weak areas</li>
-          <li>The Good news is that everything you will get at no cost as everyhting is free.</li>
+          <li>
+            <strong>Topic-wise Mapping</strong>
+            Mapped to the latest exam patterns for pinpoint focus.
+          </li>
+          <li>
+            <strong>Expert Solutions</strong>
+            Step-by-step verified explanations and video solutions.
+          </li>
+          <li>
+            <strong>Smart Filters</strong>
+            Fast keywords and exam filters to target your weak areas.
+          </li>
+          <li>
+            <strong>Always 100% Free</strong>
+            Access NIMCET and CUET PG PYQs at zero cost.
+          </li>
         </ul>
 
         <div className={styles.pyqPromo}>
-          <h3>Want to solve complete papers at once?</h3>
-          <p>Experience the actual exam environment with our interactive full-length PYQ paper viewer.</p>
+          <h3>Looking for Full-Length Papers?</h3>
+          <p>
+            Don't just practice questions—simulate the real exam. Browse our interactive 
+            Full Year-wise Question Papers to build your speed and accuracy.
+          </p>
           <Link href="/resources" className={styles.pyqPromoBtn}>
-            Explore Year-wise Full Papers
+            Browse Full Papers →
           </Link>
         </div>
 
         <nav className={styles.hubNav} aria-label="Browse by category">
+          <h3>Quick Access by Exam or Subject</h3>
           <ul>
-            <li><Link href="/questions?exam=NIMCET">NIMCET PYQs</Link></li>
-            <li><Link href="/questions?exam=CUET PG">CUET PG PYQs</Link></li>
+            <li><Link href="/questions?exam=NIMCET">NIMCET Library</Link></li>
+            <li><Link href="/questions?exam=CUET PG">CUET PG Hub</Link></li>
             <li><Link href="/questions?subject=Mathematics">Mathematics</Link></li>
             <li><Link href="/questions?subject=Computer">Computer Science</Link></li>
-            <li><Link href="/questions?subject=English">English</Link></li>
+            <li><Link href="/questions?subject=English">General English</Link></li>
             <li><Link href="/questions?subject=Logical%20Reasoning">Logical Reasoning</Link></li>
-            <li><Link href="/questions?subject=Aptitude">Aptitude</Link></li>
+            <li><Link href="/questions?subject=Aptitude">Quantitative Aptitude</Link></li>
           </ul>
         </nav>
       </section>

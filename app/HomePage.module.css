@@ -31,7 +31,7 @@
   position: relative;
   min-height: 480px;
   overflow: hidden;
-  padding-top: calc(var(--header-height) + 20px);
+  padding-top: 40px;
 }
 
 .premiumBlob {

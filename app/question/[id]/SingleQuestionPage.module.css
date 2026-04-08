@@ -4,7 +4,7 @@
   grid-template-columns: 1fr;
   gap: 30px;
   max-width: 1400px;
-  margin: 120px auto 40px;
+  margin: 40px auto 40px;
   padding: 0 4%;
 }
 
@@ -20,7 +20,7 @@
 
 .sidebar {
   position: sticky;
-  top: 100px;
+  top: calc(var(--header-height, 72px) + 20px);
   align-self: start;
 }
 
@@ -322,7 +322,7 @@
 }
 
 @media (max-width: 768px) {
-  .pageLayout { margin-top: 80px; padding: 0 15px; }
+  .pageLayout { margin-top: 20px; padding: 0 15px; }
   .questionCard { padding: 25px; }
   .tipBar { display: none; }
   .optionsGrid { grid-template-columns: 1fr; }

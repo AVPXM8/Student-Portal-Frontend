@@ -2,42 +2,64 @@
 
 .heroSection {
   text-align: center;
-  margin-bottom: 2rem;
-  padding: calc(var(--header-height) + 4rem) 2rem 5rem;
-  background: var(--grad-main);
-  color: var(--text-inverse);
-  box-shadow: var(--shadow-premium);
+  margin-bottom: 0;
+  padding: 80px 5% 100px;
+  background: radial-gradient(circle at top right, #1e293b, #0f172a);
+  color: #fff;
   position: relative;
   overflow: hidden;
 }
 
+.heroSection::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -5%;
+  width: 40%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(255, 94, 14, 0.15), transparent 70%);
+  z-index: 0;
+  filter: blur(60px);
+}
+
 .heroSection h1 {
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  font-weight: 800;
-  margin-bottom: 1.5rem;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 950;
+  margin-bottom: 20px;
   position: relative;
   z-index: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.heroSection h1 span {
+  color: var(--primary);
+  background: var(--grad-main);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .subheading {
-  font-size: 1.25rem;
-  opacity: 0.95;
-  max-width: 800px;
-  margin: 0 auto 3rem;
+  font-size: 1.35rem;
+  color: #cbd5e1;
+  max-width: 850px;
+  margin: 0 auto 50px;
   position: relative;
   z-index: 1;
   line-height: 1.6;
+  font-weight: 500;
 }
 
 .heroSection h3 {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 3rem 0 1.5rem;
+  letter-spacing: 0.2em;
+  margin: 60px 0 30px;
   position: relative;
   z-index: 1;
-  opacity: 0.8;
+  color: var(--primary);
+  font-weight: 900;
 }
 
 /* Hub Nav */
@@ -45,40 +67,41 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
   list-style: none;
   position: relative;
   z-index: 1;
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 60px auto 0;
 }
 
 .hubNav a {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  padding: 10px 22px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  padding: 12px 28px;
   border-radius: 100px;
   font-weight: 700;
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.1);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: inline-block;
   color: #fff;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .hubNav a:hover {
-  background: #fff;
-  color: var(--primary);
-  transform: translateY(-3px) scale(1.05);
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(255, 94, 14, 0.2);
 }
 
 .benefitList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto 50px;
   list-style: none;
   padding: 0;
   position: relative;
@@ -86,50 +109,83 @@
 }
 
 .benefitList li {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-weight: 500;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 600;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  text-align: center;
+  gap: 14px;
+  transition: all 0.3s ease;
+}
+
+.benefitList li:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
 }
 
 .benefitList li::before {
-  content: "✦";
-  color: #fff;
-  font-weight: 900;
+  content: "✓";
+  color: var(--primary);
+  font-size: 1.5rem;
+  background: rgba(255, 94, 14, 0.1);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-bottom: 4px;
 }
 
 .pyqPromo {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 2.5rem;
-  border-radius: 24px;
-  max-width: 700px;
-  margin: 4rem auto 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 40px;
+  border-radius: 30px;
+  max-width: 850px;
+  margin: 60px auto 0;
   position: relative;
   z-index: 1;
+  color: #0f172a;
+  text-align: center;
+  box-shadow: 0 30px 60px -15px rgba(0,0,0,0.2);
 }
 
-.pyqPromo h3 { margin: 0 0 10px; opacity: 1; }
-.pyqPromo p { margin-bottom: 2rem; opacity: 0.9; }
+.pyqPromo h3 { 
+  margin: 0 0 10px; 
+  font-weight: 850; 
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.pyqPromo p { 
+  margin-bottom: 30px; 
+  color: #64748b;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
 
 .pyqPromoBtn {
-  background: #fff;
-  color: var(--primary);
-  padding: 12px 32px;
+  background: var(--primary);
+  color: #fff;
+  padding: 16px 40px;
   border-radius: 100px;
   font-weight: 800;
   text-decoration: none;
   display: inline-block;
   transition: all 0.3s;
+  box-shadow: 0 10px 20px rgba(255, 94, 14, 0.2);
 }
 
 .pyqPromoBtn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+  box-shadow: 0 15px 30px rgba(255, 94, 14, 0.3);
 }
 
 /* Topic Practice Section */
@@ -166,16 +222,18 @@
 /* Exam Card Accordion */
 .examCard {
   background: #fff;
-  border-radius: 20px;
-  border: 1px solid var(--border-light);
-  margin-bottom: 2rem;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  margin-bottom: 30px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-  transition: box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .examCard:hover {
-  box-shadow: var(--shadow-premium);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+  border-color: var(--primary);
 }
 
 .examCardHeader {
@@ -193,10 +251,11 @@
 }
 
 .examCardHeader h3 {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--text-main);
+  font-size: 1.6rem;
+  font-weight: 850;
+  color: var(--ink-900);
   margin-bottom: 12px;
+  letter-spacing: -0.02em;
 }
 
 .examMeta {
@@ -206,12 +265,13 @@
 }
 
 .metaBadge {
-  background: #f1f5f9;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  background: #f8fafc;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-dim);
+  color: #64748b;
+  border: 1px solid #e2e8f0;
 }
 
 .metaBadge.metaNeg {
@@ -252,11 +312,25 @@
 }
 
 .sectionHeader2 h4 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--primary);
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: #0f172a;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  position: relative;
+  padding-left: 15px;
+}
+
+.sectionHeader2 h4::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 2px;
 }
 
 .sectionMeta {
@@ -265,13 +339,13 @@
 }
 
 .sectionMeta span {
-  background: #fff7ed;
-  color: #c2410c;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  background: #fffafa;
+  color: var(--primary);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-weight: 800;
-  border: 1px solid #ffedd5;
+  border: 1px solid rgba(255, 94, 14, 0.15);
 }
 
 .topicCardGrid {
@@ -283,15 +357,16 @@
 /* Topic Card */
 .topicCard {
   background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .topicCard:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
 }
 
 .topicCardTitle {
