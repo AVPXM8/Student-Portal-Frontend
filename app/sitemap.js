@@ -1,3 +1,5 @@
+import { PYQ_DATA } from "@/data/resourceData";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 const SITE_URL = 'https://question.maarula.in';
 
@@ -49,5 +51,13 @@ export default async function sitemap() {
     console.error('Sitemap: Failed to fetch dynamic URLs', err.message);
   }
 
-  return [...staticRoutes, ...postRoutes, ...questionRoutes];
+  // Exam Resource pages
+  const examRoutes = Object.keys(PYQ_DATA).map((exam) => ({
+    url: `${SITE_URL}/resources/${encodeURIComponent(exam)}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...postRoutes, ...questionRoutes, ...examRoutes];
 }

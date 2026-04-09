@@ -5,17 +5,24 @@ export async function generateMetadata({ params }) {
   const { examName } = await params;
   const decoded = decodeURIComponent(examName);
   
-  // Case-insensitive lookup
-  const matchedKey = Object.keys(PYQ_DATA).find(
-    key => key.toUpperCase() === decoded.toUpperCase()
-  );
+  // Robust case-insensitive lookup
+  const matchedKey = Object.keys(PYQ_DATA).find(key => {
+    const k = key.toUpperCase();
+    const d = decoded.toUpperCase();
+    return k === d || 
+           k.replace(/-/g, ' ') === d || 
+           k === d.replace(/-/g, ' ') ||
+           k.replace(/[- ]/g, '') === d.replace(/[- ]/g, '');
+  });
+  
   const data = PYQ_DATA[matchedKey];
+  const displayTitle = matchedKey || decoded;
 
   if (!data) return { title: "Exam Not Found | Mathem Solvex" };
 
   return {
-    title: `${decoded} Previous Year Papers PDF | Mathem Solvex`,
-    description: `Download official ${decoded} previous year question papers PDF. Year-wise and topic-wise solutions available for free.`,
+    title: `${displayTitle} Previous Year Papers PDF | Mathem Solvex`,
+    description: `Download official ${displayTitle} previous year question papers PDF. Year-wise and topic-wise solutions available for free.`,
     openGraph: {
       title: `${decoded} PYQ Resources`,
       description: `Free PDF downloads for ${decoded} MCA entrance exam.`,

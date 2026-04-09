@@ -79,14 +79,22 @@ const PYQResourcesPage = () => {
     );
   }
 
-  // --- 2. DETAIL PAGE VIEW (Exam selected) ---
-  const formattedExamName = decodeURIComponent(examName).replace(/-/g, ' ');
+  const decodedExamName = decodeURIComponent(examName);
   
-  // Case-insensitive lookup
-  const matchedKey = Object.keys(PYQ_DATA).find(
-    key => key.toUpperCase() === formattedExamName.toUpperCase()
-  );
+  // Robust case-insensitive lookup
+  // We compare normalized versions (uppercase, no spaces/hyphens) to ensure matches
+  const matchedKey = Object.keys(PYQ_DATA).find(key => {
+    const k = key.toUpperCase();
+    const d = decodedExamName.toUpperCase();
+    return k === d || 
+           k.replace(/-/g, ' ') === d || 
+           k === d.replace(/-/g, ' ') ||
+           k.replace(/[- ]/g, '') === d.replace(/[- ]/g, '');
+  });
+  
   const currentExamData = PYQ_DATA[matchedKey];
+  // Use the actual key from the data for display if found, otherwise use decoded name
+  const formattedExamName = matchedKey || decodedExamName.replace(/-/g, ' ');
 
   // 404 Handling
   if (!currentExamData) {
