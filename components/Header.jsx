@@ -82,7 +82,6 @@ const Header = () => {
               <Link href="/resources" className={styles.highlightLink}>PYQ PDF Downloads</Link>
               <a href="https://maarulaclasses.classx.co.in/new-courses" target="_blank" rel="noopener noreferrer">Our Courses</a>
               <a href="https://maarulaclasses.classx.co.in/test-series" target="_blank" rel="noopener noreferrer">Test Series</a>
-              <Link href="/results">Our Results</Link>
               <Link href="/about">About Us</Link>
             </div>
           </div>
@@ -118,11 +117,9 @@ const Header = () => {
           
           <div className={styles.mobileSectionTitle}>Quick Links</div>
           <Link href="/articles" className={pathname.startsWith('/articles') ? styles.active : ''} onClick={closeMobileMenu}>Latest Updates</Link>
-          <Link href="/results" className={pathname.startsWith('/results') ? styles.active : ''} onClick={closeMobileMenu}>Exam Results</Link>
+          <Link href="/about" className={pathname.startsWith('/about') ? styles.active : ''} onClick={closeMobileMenu}>About Us</Link>
           <a href="https://maarulaclasses.classx.co.in/new-courses" target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu}>Our Premium Courses</a>
           
-          <div className={styles.mobileSectionTitle}>About Mathem</div>
-          <Link href="/about" className={pathname === '/about' ? styles.active : ''} onClick={closeMobileMenu}>About Mathem Solvex</Link>
           <Link href="/contact" className={pathname === '/contact' ? styles.active : ''} onClick={closeMobileMenu}>Contact Support</Link>
         </nav>
       </div>
