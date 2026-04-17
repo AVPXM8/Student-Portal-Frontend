@@ -97,7 +97,7 @@ const Footer = () => {
       <div className={styles.footerBottom}>
         <p>© {new Date().getFullYear()} Maarula Classes. All Rights Reserved.</p>
         <p className={styles.developerCredit}>
-          Developed and maintained by{' '}
+          Designed & Developed with ❤️ by{' '}
           <a 
             href="https://linkedin.com/in/vivek33pal" 
             target="_blank" 

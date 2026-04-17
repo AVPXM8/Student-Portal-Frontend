@@ -234,10 +234,30 @@
 }
 
 @media (max-width: 768px) {
+  .footer {
+    padding: 60px 20px 90px;
+  }
   .footerGrid {
     grid-template-columns: 1fr 1fr;
     gap: 40px 20px;
   }
   .footerTitle { font-size: 1.5rem; }
   .appCta { padding: 30px 20px; }
+  .playStoreButton { padding: 12px 24px; font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .footerGrid {
+    grid-template-columns: 1fr; /* Single column for small phones */
+    gap: 32px;
+    text-align: center;
+  }
+  .footerColumn a:hover {
+     transform: translateY(-2px);
+  }
+  .footerBottom {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .appCta h4 { font-size: 1.4rem; }
 }
