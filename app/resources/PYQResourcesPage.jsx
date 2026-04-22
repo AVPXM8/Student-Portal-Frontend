@@ -27,7 +27,7 @@ const MigrationNotice = () => (
       We have recently migrated this portal from React JS to Next.js, and the setup is currently under migration. If you are experiencing any technical issues (e.g., while giving mock tests), please use the old portal: <a href="https://mathemsolvex.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>https://mathemsolvex.vercel.app/</a>
     </p>
     <p style={{ margin: 0, fontSize: '0.95rem' }}>
-      If you have suggestions or want to help with the process, please contact the developer via LinkedIn: <a href="https://www.linkedin.com/in/vivek33pal" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>Vivek Kumar</a> or WhatsApp: <a href="https://wa.me/919354368207" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>+91 9354368207</a>. We are working hard to help you out. Best of luck! <br />— Vivek Kumar
+      If you have suggestions or want to help with the migration process, please contact the developer via LinkedIn: <a href="https://www.linkedin.com/in/vivek33pal" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>Vivek Kumar</a> or WhatsApp: <a href="https://wa.me/919354368207" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>+91 9354368207</a>. We are working hard to help you out. Best of luck ❤️! <br />— Vivek Kumar
     </p>
   </div>
 );
@@ -350,10 +350,38 @@ const PYQResourcesPage = () => {
                 </div>
                 
                 <div className={styles.pdfActions}>
-                  {pdf.year && (
+                  {pdf.year ? (
                     <Link href={`/test?exam=${encodeURIComponent(formattedExamName)}&year=${pdf.year}`} className={styles.pSolveBtn}>
                       <Sparkles size={16} /> <span>Live Test</span>
                     </Link>
+                  ) : (
+                    <div className={styles.topicTestButtons}>
+                      {[1, 2, 3, 4, 5].map(testNum => {
+                        // Determine subject for better filtering
+                        let subj = "";
+                        const t = pdf.title.toLowerCase();
+                        if (formattedExamName === "NIMCET") subj = "Mathematics";
+                        else if (formattedExamName === "CUET PG") {
+                          if (t.includes("computer")) subj = "Computer";
+                          else if (t.includes("mathematics")) subj = "Mathematics";
+                          else if (t.includes("reasoning")) subj = "Logical Reasoning";
+                        }
+                        
+                        // Use search for better matching of display titles, but keep topic for backend compatibility
+                        // Also include subject to prevent "other topic" questions from appearing
+                        const href = `/test?exam=${encodeURIComponent(formattedExamName)}${subj ? `&subject=${encodeURIComponent(subj)}` : ""}&search=${encodeURIComponent(pdf.title)}&page=${testNum}&limit=20`;
+                        
+                        return (
+                          <Link 
+                            key={testNum}
+                            href={href} 
+                            className={styles.pTopicTestBtn}
+                          >
+                            Test {testNum}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   )}
                   <a href={pdf.url} target={pdf.openInSamePage ? "_self" : "_blank"} rel="noopener noreferrer" className={styles.pDownloadBtn}>
                     {pdf.openInSamePage ? <BookOpen size={18} /> : <Download size={18} />} 

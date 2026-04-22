@@ -1,11 +1,10 @@
-"use client";
-import Link from 'next/link';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-
-import api from "@/api";
-
-import MathPreview from '@/components/MathPreview';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
+import api from '../api';
+import { Helmet } from 'react-helmet-async';
+import MathPreview from '../components/MathPreview';
 import {
   Filter,
   Search,
@@ -15,28 +14,14 @@ import {
   Loader2,
   ArrowUp,
   RefreshCw,
-  AlertCircle
 } from 'lucide-react';
-import styles from "./QuestionLibraryPage.module.css";
+import styles from './QuestionLibraryPage.module.css';
 
 const SITE_URL = 'https://question.maarula.in';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og/maarula-question-bank.png`;
-const absUrl = (path, query = '') => `${SITE_URL}${path}${query ? `?${query}` : ''}`;
+const absUrl = (path, query = '') => `${SITE_URL}${path}${query ? `?${query}` : ''};
+`;
 const sanitizePath = (p) => p.replace(/\/{2,}/g, '/');
-
-const MigrationNotice = () => (
-  <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '15px 20px', borderRadius: '8px', margin: '20px 5%', border: '1px solid #ffeeba', fontFamily: 'inherit', lineHeight: '1.6', position: 'relative', zIndex: 10 }}>
-    <h3 style={{ marginTop: 0, marginBottom: '10px', color: '#856404', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem' }}>
-      <AlertCircle size={20} /> Important Migration Notice
-    </h3>
-    <p style={{ marginBottom: '10px', fontSize: '0.95rem' }}>
-      We have recently migrated this portal from React JS to Next.js, and the setup is currently under migration. If you are experiencing any technical issues (e.g., while giving mock tests), please use the old portal: <a href="https://mathemsolvex.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>https://mathemsolvex.vercel.app/</a>
-    </p>
-    <p style={{ margin: 0, fontSize: '0.95rem' }}>
-      If you have suggestions or want to help with the process, please contact the developer via LinkedIn: <a href="https://www.linkedin.com/in/vivek33pal" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>Vivek Kumar</a> or WhatsApp: <a href="https://wa.me/919354368207" target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold' }}>+91 9354368207</a>. We are working hard to help you out. Best of luck! <br />— Vivek Kumar
-    </p>
-  </div>
-);
 
 /* -------------------------------------------------------------------------- */
 /*  STABLE FILTER FORM (OUTSIDE PARENT) — includes Year + filter skeleton     */
@@ -178,11 +163,11 @@ const FilterFormContent = React.memo(function FilterFormContent({
 /* -------------------------------------------------------------------------- */
 const ExamAccordionCard = ({ title, meta, children }) => {
   const [isOpen, setIsOpen] = useState(false);
-
+  
   return (
     <div className={styles.examCard}>
-      <div
-        className={styles.examCardHeader}
+      <div 
+        className={styles.examCardHeader} 
         onClick={() => setIsOpen(!isOpen)}
       >
         <div>
@@ -209,7 +194,7 @@ const ExamAccordionCard = ({ title, meta, children }) => {
 /* -------------------------------------------------------------------------- */
 const TopicAccordionCard = ({ topic, exam, subject }) => {
   const [isOpen, setIsOpen] = useState(false);
-
+  
   return (
     <div className={styles.topicCard}>
       <div className={styles.topicCardTitle} onClick={() => setIsOpen(!isOpen)}>
@@ -220,22 +205,15 @@ const TopicAccordionCard = ({ topic, exam, subject }) => {
       </div>
       {isOpen && (
         <div className={styles.testBtnGroup}>
-          {[1, 2, 3, 4, 5, 6].map(testNum => {
-            const safeExam = exam || '';
-            const safeSubject = subject || '';
-            const safeTopic = topic || '';
-            const href = `/test?exam=${encodeURIComponent(safeExam)}${safeSubject ? `&subject=${encodeURIComponent(safeSubject)}` : ''}&topic=${encodeURIComponent(safeTopic)}&page=${testNum}&limit=20`;
-
-            return (
-              <Link
-                key={testNum}
-                href={href}
-                className={styles.testBtn}
-              >
-                Test {testNum}
-              </Link>
-            );
-          })}
+          {[1, 2, 3, 4, 5, 6].map(testNum => (
+            <Link
+              key={testNum}
+              to={`/test?exam=${encodeURIComponent(exam)}${subject ? `&subject=${encodeURIComponent(subject)}` : ''}&topic=${encodeURIComponent(topic)}&page=${testNum}&limit=20`}
+              className={styles.testBtn}
+            >
+              Test {testNum}
+            </Link>
+          ))}
         </div>
       )}
     </div>
@@ -255,9 +233,8 @@ const QuestionLibraryPage = () => {
   const [error, setError] = useState(null);
 
   // Router + pagination
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [totalDocs, setTotalDocs] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -329,7 +306,7 @@ const QuestionLibraryPage = () => {
     else newParams.delete('search');
 
     newParams.set('page', '1');
-    router.push('?' + newParams.toString(), { scroll: false });
+    setSearchParams(newParams);
 
     // close panel & return focus
     setIsFilterOpen(false);
@@ -382,7 +359,6 @@ const QuestionLibraryPage = () => {
       exam: currentAppliedFilters.exam,
       subject: currentAppliedFilters.subject,
       year: currentAppliedFilters.year,
-      noOptions: true,
     };
 
     api
@@ -424,7 +400,7 @@ const QuestionLibraryPage = () => {
       if (urlPage !== currentPage) {
         const newParams = new URLSearchParams(searchParams);
         newParams.set('page', String(currentPage));
-        router.push('?' + newParams.toString(), { scroll: false });
+        setSearchParams(newParams);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -436,7 +412,7 @@ const QuestionLibraryPage = () => {
     setPendingExam('');
     setPendingSubject('');
     setPendingYear('');
-    router.push('?' + new URLSearchParams({ page: '1', limit: String(limit) }).toString(), { scroll: false });
+    setSearchParams({ page: '1', limit: String(limit) });
     setIsFilterOpen(false);
     filterToggleBtnRef.current?.focus();
   };
@@ -456,7 +432,7 @@ const QuestionLibraryPage = () => {
       }
     }
     newParams.set('page', '1');
-    router.push('?' + newParams.toString(), { scroll: false });
+    setSearchParams(newParams);
   };
 
   // Pagination helpers
@@ -464,7 +440,7 @@ const QuestionLibraryPage = () => {
     if (pageNumber > 0 && pageNumber <= totalPages && pageNumber !== currentPage) {
       const newParams = new URLSearchParams(searchParams);
       newParams.set('page', String(pageNumber));
-      router.push('?' + newParams.toString(), { scroll: false });
+      setSearchParams(newParams);
     }
   };
   const nextPage = () => goToPage(currentPage + 1);
@@ -487,7 +463,7 @@ const QuestionLibraryPage = () => {
     currentAppliedFilters.search
   );
 
-  // pageTitle helper
+  // SEO (same as before)
   const pageTitle = useMemo(() => {
     const bits = [];
     if (currentAppliedFilters.exam) bits.push(currentAppliedFilters.exam);
@@ -506,20 +482,20 @@ const QuestionLibraryPage = () => {
     if (currentAppliedFilters.year) bits.push(`Year ${currentAppliedFilters.year}`);
     if (currentAppliedFilters.search) bits.push(`matching "${currentAppliedFilters.search}"`);
     const filterDesc = bits.length ? `Filtered by ${bits.join(', ')}. ` : '';
-    return `Practice 17 years of MCA entrance PYQs (NIMCET, CUET PG & more) with detailed solutions and video explanations across Mathematics, Computer Science, English, Logical Reasoning, and Aptitude. ${filterDesc}Search and filter to prepare smarter.`;
+    return `Practice 17 years of MCA entrance PYQs (NIMCET, CUET-PG & more) with detailed solutions and video explanations across Mathematics, Computer Science, English, Logical Reasoning, and Aptitude. ${filterDesc}Search and filter to prepare smarter.`;
   }, [currentAppliedFilters]);
 
   // prev/next urls for SEO
-  const canonicalUrl = absUrl(pathname, searchParams.toString());
+  const canonicalUrl = absUrl(location.pathname, searchParams.toString());
   const prevQuery = new URLSearchParams(searchParams);
   prevQuery.set('page', String(currentPage - 1));
   const nextQuery = new URLSearchParams(searchParams);
   nextQuery.set('page', String(currentPage + 1));
   const showPrevNext = totalPages > 1;
   const prevPageUrl =
-    showPrevNext && currentPage > 1 ? absUrl(pathname, prevQuery.toString()) : null;
+    showPrevNext && currentPage > 1 ? absUrl(location.pathname, prevQuery.toString()) : null;
   const nextPageUrl =
-    showPrevNext && currentPage < totalPages ? absUrl(pathname, nextQuery.toString()) : null;
+    showPrevNext && currentPage < totalPages ? absUrl(location.pathname, nextQuery.toString()) : null;
 
   // Structured data (same as before)
   const breadcrumbSchema = {
@@ -534,15 +510,15 @@ const QuestionLibraryPage = () => {
   const itemListSchema =
     questions.length > 0
       ? {
-        '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        itemListElement: (questions.slice(0, 20) || []).map((q, idx) => ({
-          '@type': 'ListItem',
-          position: idx + 1 + (currentPage - 1) * limit,
-          url: absUrl(sanitizePath(`/question/${q?._id}`)),
-          name: (q?.questionText || 'Question').slice(0, 120),
-        })),
-      }
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          itemListElement: (questions.slice(0, 20) || []).map((q, idx) => ({
+            '@type': 'ListItem',
+            position: idx + 1 + (currentPage - 1) * limit,
+            url: absUrl(sanitizePath(`/question/${q?._id}`)),
+            name: (q?.questionText || 'Question').slice(0, 120),
+          })),
+        }
       : null;
 
   const webPageSchema = {
@@ -560,7 +536,7 @@ const QuestionLibraryPage = () => {
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'Are these questions updated for the latest NIMCET/CUET PG pattern?',
+        name: 'Are these questions updated for the latest NIMCET/CUET-PG pattern?',
         acceptedAnswer: {
           '@type': 'Answer',
           text: 'Yes. We continuously update question tags and solutions to reflect the latest pattern and syllabus.',
@@ -601,7 +577,7 @@ const QuestionLibraryPage = () => {
     // Keep params same — trigger useEffect by nudging page param (or call fetch directly)
     const newParams = new URLSearchParams(searchParams);
     newParams.set('page', String(currentAppliedFilters.page || 1));
-    router.push('?' + newParams.toString(), { scroll: false });
+    setSearchParams(newParams);
   };
 
   // Page number generation (compact with ellipses)
@@ -661,62 +637,61 @@ const QuestionLibraryPage = () => {
 
   return (
     <>
-      {/* Structured Data */}
-      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
-      <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
-      {itemListSchema && <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>}
-      <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-
-      <MigrationNotice />
+      {/* SEO Head */}
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        {prevPageUrl && <link rel="prev" href={prevPageUrl} />}
+        {nextPageUrl && <link rel="next" href={nextPageUrl} />}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+        {!loading && (questions.length === 0 || hasActiveFilters) && (
+          <meta name="robots" content="noindex,follow" />
+        )}
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
+        {itemListSchema && <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>}
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+      </Helmet>
 
       {/* Hero / Intro */}
       <section className={styles.heroSection}>
-        <h1>MCA Entrance <span>Previous Year Question Bank</span></h1>
+        <h1>MCA Entrance Previous Year Question Bank (PYQs)</h1>
         <p className={styles.subheading}>
-          Master your MCA entrance preparation with over 17 years of solved PYQs from NIMCET, CUET PG, and top universities.
-          Get detailed step-by-step solutions and expert insights—all 100% free.
+          Practice 17 years of solved questions from NIMCET, CUET-PG, and more.
+          Each problem includes detailed, step-by-step solutions to help you prepare smarter.
         </p>
 
+        <h3>What you’ll find here</h3>
         <ul className={styles.benefitList}>
-          <li>
-            <strong>Topic-wise Mapping</strong>
-            Mapped to the latest exam patterns for pinpoint focus.
-          </li>
-          <li>
-            <strong>Expert Solutions</strong>
-            Step-by-step verified explanations and video solutions.
-          </li>
-          <li>
-            <strong>Smart Filters</strong>
-            Fast keywords and exam filters to target your weak areas.
-          </li>
-          <li>
-            <strong>Always 100% Free</strong>
-            Access NIMCET and CUET PG PYQs at zero cost.
-          </li>
+          <li>Topic-wise PYQs mapped to the latest exam patterns</li>
+          <li>Step-by-step solutions, many with concise video explanations</li>
+          <li>Fast filters and search to target your weak areas</li>
+          <li>The Good news is that everything you will get at no cost as everyhting is free.</li>
         </ul>
 
         <div className={styles.pyqPromo}>
-          <h3>Looking for Full-Length Papers?</h3>
-          <p>
-            Don't just practice questions—simulate the real exam. Browse our interactive
-            Full Year-wise Question Papers to build your speed and accuracy.
-          </p>
-          <Link href="/resources" className={styles.pyqPromoBtn}>
-            Browse Full Papers →
+          <h3>Want to solve complete papers at once?</h3>
+          <p>Experience the actual exam environment with our interactive full-length PYQ paper viewer.</p>
+          <Link to="/resources" className={styles.pyqPromoBtn}>
+            Explore Year-wise Full Papers
           </Link>
         </div>
 
         <nav className={styles.hubNav} aria-label="Browse by category">
-          <h3>Quick Access by Exam or Subject</h3>
           <ul>
-            <li><Link href="/questions?exam=NIMCET">NIMCET Library</Link></li>
-            <li><Link href="/questions?exam=CUET PG">CUET PG Hub</Link></li>
-            <li><Link href="/questions?subject=Mathematics">Mathematics</Link></li>
-            <li><Link href="/questions?subject=Computer">Computer Science</Link></li>
-            <li><Link href="/questions?subject=English">General English</Link></li>
-            <li><Link href="/questions?subject=Logical%20Reasoning">Logical Reasoning</Link></li>
-            <li><Link href="/questions?subject=Aptitude">Quantitative Aptitude</Link></li>
+            <li><Link to="/questions?exam=NIMCET">NIMCET PYQs</Link></li>
+            <li><Link to="/questions?exam=CUET PG">CUET PG PYQs</Link></li>
+            <li><Link to="/questions?subject=Mathematics">Mathematics</Link></li>
+            <li><Link to="/questions?subject=Computer">Computer Science</Link></li>
+            <li><Link to="/questions?subject=English">English</Link></li>
+            <li><Link to="/questions?subject=Logical%20Reasoning">Logical Reasoning</Link></li>
+            <li><Link to="/questions?subject=Aptitude">Aptitude</Link></li>
           </ul>
         </nav>
       </section>
@@ -728,7 +703,7 @@ const QuestionLibraryPage = () => {
           <p className={styles.topicSectionSub}>Jump directly into topic-wise PYQs with exam details — marks, time, and negative marking.</p>
 
           {/* NIMCET Exam Card */}
-          <ExamAccordionCard
+          <ExamAccordionCard 
             title="NIMCET — NIT MCA Common Entrance Test"
             meta={
               <>
@@ -739,80 +714,80 @@ const QuestionLibraryPage = () => {
               </>
             }
           >
-            {/* Part I — Mathematics */}
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Part I — Mathematics</h4>
-                <div className={styles.sectionMeta}>
-                  <span>50 Qs</span><span>+12 / −3</span><span>70 min</span><span>600 marks</span>
+              {/* Part I — Mathematics */}
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Part I — Mathematics</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>50 Qs</span><span>+12 / −3</span><span>70 min</span><span>600 marks</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Calculus', 'Algebra', 'Matrices', 'Determinants', 'Probability', 'Statistics',
+                    'Trigonometry', 'Coordinate Geometry', 'Differential Equations', 'Integration',
+                    'Sequences & Series', 'Set Theory', 'Relations & Functions', 'Limits & Continuity',
+                    'Complex Numbers', 'Binomial Theorem', 'Straight Lines', 'Circles', 'Conic Sections',
+                    'Vectors', '3D Geometry', 'Permutations & Combinations', 'Mathematical Induction',
+                    'Quadratic Equations', 'Logarithms'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="Mathematics" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Calculus', 'Algebra', 'Matrices', 'Determinants', 'Probability', 'Statistics',
-                  'Trigonometry', 'Coordinate Geometry', 'Differential Equations', 'Integration',
-                  'Sequences & Series', 'Set Theory', 'Relations & Functions', 'Limits & Continuity',
-                  'Complex Numbers', 'Binomial Theorem', 'Straight Lines', 'Circles', 'Conic Sections',
-                  'Vectors', '3D Geometry', 'Permutations & Combinations', 'Mathematical Induction',
-                  'Quadratic Equations', 'Logarithms'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="Mathematics" />)}
-              </div>
-            </div>
 
-            {/* Part II — Analytical Ability & Logical Reasoning */}
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Part II — Analytical Ability & Logical Reasoning</h4>
-                <div className={styles.sectionMeta}>
-                  <span>40 Qs</span><span>+6 / −1.5</span><span>30 min</span><span>240 marks</span>
+              {/* Part II — Analytical Ability & Logical Reasoning */}
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Part II — Analytical Ability & Logical Reasoning</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>40 Qs</span><span>+6 / −1.5</span><span>30 min</span><span>240 marks</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Coding-Decoding', 'Blood Relations', 'Syllogisms', 'Arrangements',
+                    'Puzzles', 'Data Interpretation', 'Number Series', 'Analogies',
+                    'Direction Sense', 'Seating Arrangement', 'Data Sufficiency', 'Venn Diagrams'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="Logical Reasoning" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Coding-Decoding', 'Blood Relations', 'Syllogisms', 'Arrangements',
-                  'Puzzles', 'Data Interpretation', 'Number Series', 'Analogies',
-                  'Direction Sense', 'Seating Arrangement', 'Data Sufficiency', 'Venn Diagrams'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="Logical Reasoning" />)}
-              </div>
-            </div>
 
-            {/* Part III — Computer Awareness */}
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Part III — Computer Awareness</h4>
-                <div className={styles.sectionMeta}>
-                  <span>20 Qs</span><span>+6 / −1.5</span><span>20 min</span><span>120 marks</span>
+              {/* Part III — Computer Awareness */}
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Part III — Computer Awareness</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>20 Qs</span><span>+6 / −1.5</span><span>20 min</span><span>120 marks</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Data Structures', 'Algorithms', 'DBMS', 'Operating Systems',
+                    'Computer Networks', 'C Programming', 'Boolean Algebra', 'Number Systems',
+                    'Digital Logic', 'Computer Architecture'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="Computer" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Data Structures', 'Algorithms', 'DBMS', 'Operating Systems',
-                  'Computer Networks', 'C Programming', 'Boolean Algebra', 'Number Systems',
-                  'Digital Logic', 'Computer Architecture'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="Computer" />)}
-              </div>
-            </div>
 
-            {/* Part III — General English */}
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Part III — General English</h4>
-                <div className={styles.sectionMeta}>
-                  <span>10 Qs</span><span>+4 / −1</span><span>20 min</span><span>40 marks</span>
+              {/* Part III — General English */}
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Part III — General English</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>10 Qs</span><span>+4 / −1</span><span>20 min</span><span>40 marks</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Reading Comprehension', 'Grammar', 'Vocabulary', 'Sentence Correction',
+                    'Fill in the Blanks', 'Synonyms & Antonyms', 'Idioms & Phrases',
+                    'Error Spotting'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="English" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Reading Comprehension', 'Grammar', 'Vocabulary', 'Sentence Correction',
-                  'Fill in the Blanks', 'Synonyms & Antonyms', 'Idioms & Phrases',
-                  'Error Spotting'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="NIMCET" subject="English" />)}
-              </div>
-            </div>
           </ExamAccordionCard>
 
           {/* CUET PG Exam Card */}
-          <ExamAccordionCard
+          <ExamAccordionCard 
             title="CUET PG — Common University Entrance Test (MCA)"
             meta={
               <>
@@ -824,56 +799,57 @@ const QuestionLibraryPage = () => {
               </>
             }
           >
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Mathematics</h4>
-                <div className={styles.sectionMeta}>
-                  <span>+4 / −1</span>
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Mathematics</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>+4 / −1</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Calculus', 'Algebra', 'Matrices', 'Probability', 'Statistics',
+                    'Coordinate Geometry', 'Differential Equations', 'Trigonometry',
+                    'Set Theory', 'Number Theory', 'Linear Programming', 'Sequences & Series'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="CUET PG" subject="Mathematics" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Calculus', 'Algebra', 'Matrices', 'Probability', 'Statistics',
-                  'Coordinate Geometry', 'Differential Equations', 'Trigonometry',
-                  'Set Theory', 'Number Theory', 'Linear Programming', 'Sequences & Series'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="CUET PG" subject="Mathematics" />)}
-              </div>
-            </div>
 
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Computer Science</h4>
-                <div className={styles.sectionMeta}>
-                  <span>+4 / −1</span>
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Computer Science</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>+4 / −1</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Data Structures', 'Algorithms', 'DBMS', 'Operating Systems',
+                    'Computer Networks', 'C Programming', 'Software Engineering',
+                    'Theory of Computation', 'Compiler Design', 'Boolean Algebra',
+                    'Digital Logic', 'Computer Architecture'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="CUET PG" subject="Computer" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Data Structures', 'Algorithms', 'DBMS', 'Operating Systems',
-                  'Computer Networks', 'C Programming', 'Software Engineering',
-                  'Theory of Computation', 'Compiler Design', 'Boolean Algebra',
-                  'Digital Logic', 'Computer Architecture'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="CUET PG" subject="Computer" />)}
-              </div>
-            </div>
 
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionHeader2}>
-                <h4>Reasoning & English</h4>
-                <div className={styles.sectionMeta}>
-                  <span>+4 / −1</span>
+              <div className={styles.sectionBlock}>
+                <div className={styles.sectionHeader2}>
+                  <h4>Reasoning & English</h4>
+                  <div className={styles.sectionMeta}>
+                    <span>+4 / −1</span>
+                  </div>
+                </div>
+                <div className={styles.topicCardGrid}>
+                  {[
+                    'Logical Reasoning', 'Analytical Ability', 'Data Interpretation',
+                    'Reading Comprehension', 'Grammar', 'Vocabulary'
+                  ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="CUET PG" subject="" />)}
                 </div>
               </div>
-              <div className={styles.topicCardGrid}>
-                {[
-                  'Logical Reasoning', 'Analytical Ability', 'Data Interpretation',
-                  'Reading Comprehension', 'Grammar', 'Vocabulary'
-                ].map(topic => <TopicAccordionCard key={topic} topic={topic} exam="CUET PG" subject="" />)}
-              </div>
-            </div>
           </ExamAccordionCard>
         </div>
       </section>
+
 
       {/* Mobile overlay + sidebar */}
       {isFilterOpen && (
@@ -926,9 +902,9 @@ const QuestionLibraryPage = () => {
         <main aria-busy={loading} aria-live="polite" aria-describedby="list-status">
           {/* Breadcrumbs (visual) */}
           <nav aria-label="Breadcrumb" className={styles.visualBreadcrumbs}>
-            <Link href="/">Home</Link>
+            <Link to="/">Home</Link>
             <span aria-hidden="true">›</span>
-            <Link href="/questions">Question Bank</Link>
+            <Link to="/questions">Question Bank</Link>
             {currentAppliedFilters.exam && (
               <>
                 <span aria-hidden="true">›</span>
@@ -1047,7 +1023,7 @@ const QuestionLibraryPage = () => {
             ) : questions.length > 0 ? (
               <>
                 {questions.map((q) => (
-                  <Link href={`/question/${q?._id}`} key={q?._id} className={styles.questionCard}>
+                  <Link to={`/question/${q?._id}`} key={q?._id} className={styles.questionCard}>
                     <div className={styles.tags}>
                       {q?.exam && <span className={styles.tag}>{q.exam}</span>}
                       {q?.subject && <span className={styles.tag}>{q.subject}</span>}
@@ -1150,7 +1126,7 @@ const QuestionLibraryPage = () => {
                 Use the filters for exam and subject, and the search box for topics, keywords, or formula names.
               </p>
             </details>
-            <details>
+             <details>
               <summary>Do I need to pay for the question bank?</summary>
               <p>
                 No, Mathem Solvex Offers you everything for free, you do not need to pay anything for question bank You will get NIMCET and CUET PYQ and all the information for free.

@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, FileText, Trophy, LayoutGrid, Bell } from 'lucide-react';
+import { Home, BookOpen, FileText, Trophy, LayoutGrid, Bell, Users } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 const BottomNav = () => {
@@ -13,7 +13,7 @@ const BottomNav = () => {
     { label: 'PYQs', icon: BookOpen, href: '/questions' },
     { label: 'Updates', icon: Bell, href: '/articles' },
     { label: 'Resources', icon: LayoutGrid, href: '/resources' },
-    { label: 'Results', icon: Trophy, href: '/results' },
+    { label: 'About', icon: Users, href: '/about' },
   ];
 
   // Don't show on specific functional pages (like Test Environment) if needed

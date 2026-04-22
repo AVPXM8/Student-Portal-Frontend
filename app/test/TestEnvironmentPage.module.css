@@ -59,6 +59,17 @@
   flex-shrink: 0;
 }
 
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.revealed {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease-in-out;
+}
+
 .exitBtn:hover {
   background: #DC2626;
   color: #fff;
@@ -174,6 +185,61 @@
   border-radius: 100px;
   font-weight: 800;
   font-size: 0.9rem;
+}
+
+.reviewActions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+/* --- 7. Review & Solutions Mode --- */
+.correctOption {
+  border-color: #10b981 !important;
+  background: #ecfdf5 !important;
+}
+
+.correctOption .optionLabel {
+  background: #10b981;
+  color: white;
+}
+
+.incorrectOption {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
+
+.incorrectOption .optionLabel {
+  background: #ef4444;
+  color: white;
+}
+
+.correctIcon {
+  margin-left: auto;
+  color: #10b981;
+}
+
+.solutionBox {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+
+.solutionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #047857;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.solutionContent {
+  color: #334155;
+  line-height: 1.6;
 }
 
 .qActions {

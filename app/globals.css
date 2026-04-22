@@ -42,10 +42,19 @@
   --bottom-nav-height: 72px;
 }
 
-* {
+html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scroll globally */
+  width: 100%;
+  position: relative;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 body {

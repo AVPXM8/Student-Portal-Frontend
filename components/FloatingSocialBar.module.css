@@ -69,3 +69,25 @@
   background-color: #dc2626; /* Red */
   transform: rotate(180deg);
 }
+
+@media (max-width: 768px) {
+  .container {
+    bottom: 90px;
+    left: 15px;
+  }
+
+  .toggleButton {
+    width: 48px;
+    height: 48px;
+  }
+
+  .socialLink {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+
+  .socialLinkList.open {
+    margin-bottom: 12px;
+  }
+}

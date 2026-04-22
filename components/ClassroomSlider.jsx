@@ -15,7 +15,7 @@ export default function ClassroomSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % classroomImages.length);
-    }, 5000);
+    }, 2000); // 2 second interval
     return () => clearInterval(timer);
   }, []);
 

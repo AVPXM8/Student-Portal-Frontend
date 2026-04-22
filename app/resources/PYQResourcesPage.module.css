@@ -132,6 +132,7 @@
   display: block;
   background: var(--grad-main);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 10px 20px rgba(255, 94, 14, 0.2));
 }
@@ -637,10 +638,40 @@
   font-size: 0.9rem;
 }
 
-.pSolveBtn, .pDownloadBtn {
+.pSolveBtn, .pDownloadBtn, .pTopicTestBtn {
   padding: 12px;
   border-radius: 12px;
   font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.topicTestButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.pTopicTestBtn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  padding: 8px;
+}
+
+.pTopicTestBtn:hover {
+  background: var(--text-main);
+  color: white;
+  border-color: var(--text-main);
+  transform: translateY(-2px);
 }
 
 .pSolveBtn {

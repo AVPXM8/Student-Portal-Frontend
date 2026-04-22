@@ -40,34 +40,52 @@ const TestEnvironmentPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const examName = searchParams.get('exam') || 'NIMCET';
+  const examName = searchParams.get('exam') || '';
   const subject  = searchParams.get('subject') || '';
   const topic    = searchParams.get('topic') || '';
-  const page     = searchParams.get('page') || '1';
-  const limit    = searchParams.get('limit') || '20';
+  const year     = searchParams.get('year') || '';
+  const page     = parseInt(searchParams.get('page') || '1', 10);
+  const limit    = parseInt(searchParams.get('limit') || '300', 10);
+  const titleQuery = searchParams.get('search') || '';
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [isTestSubmitted, setIsTestSubmitted] = useState(false);
+  const [isReviewMode, setIsReviewMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
+  const [isQuestionRevealed, setIsQuestionRevealed] = useState(false);
   const [status, setStatus] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-
-  // Re-typeset MathJax whenever question changes
-  useMathJax([currentIndex, questions[currentIndex]?.questionText]);
+  const [fullQuestions, setFullQuestions] = useState({});
+  const [loadingFullQuestions, setLoadingFullQuestions] = useState({});
 
   // Fetch Questions
   useEffect(() => {
     const fetchQuestions = async () => {
       setLoading(true);
       try {
-        const params = { exam: examName, subject, topic, page, limit };
+        const params = { page, limit };
+        if (examName) params.exam = examName;
+        if (subject) params.subject = subject;
+        if (topic) params.topic = topic;
+        if (titleQuery) params.search = titleQuery;
+        if (year) params.year = year;
+
         const res = await api.get('/questions/public', { params });
-        const data = res.data?.questions || [];
+        let data = res.data?.questions || [];
+        
+        // Sort based on Section Order
+        data.sort((a, b) => {
+          const wA = SECTION_ORDER[(a.subject || '').toUpperCase()] || 99;
+          const wB = SECTION_ORDER[(b.subject || '').toUpperCase()] || 99;
+          if (wA !== wB) return wA - wB;
+          return (parseInt(a.questionNumber) || 0) - (parseInt(b.questionNumber) || 0);
+        });
+
         setQuestions(data);
         
         const initialStatus = {};
@@ -76,7 +94,11 @@ const TestEnvironmentPage = () => {
         });
         setStatus(initialStatus);
         
-        const config = EXAM_CONFIGS[examName.toUpperCase()] || EXAM_CONFIGS['NIMCET'];
+        let config = EXAM_CONFIGS[(examName || '').toUpperCase()] || EXAM_CONFIGS['NIMCET'];
+        if (!year && topic) {
+          // Defaults for topic tests
+          config = { time: 60, correct: 1, incorrect: 0 };
+        }
         setTimeLeft(config.time * 60);
       } catch (err) {
         console.error("Failed to fetch questions", err);
@@ -85,11 +107,21 @@ const TestEnvironmentPage = () => {
       }
     };
     fetchQuestions();
-  }, [examName, subject, topic, page, limit]);
+  }, [examName, subject, topic, page, limit, year, titleQuery]);
+
+  // Reveal questions after a short delay to allow MathJax to typeset
+  useEffect(() => {
+    if (!loading && questions.length > 0) {
+      const timer = setTimeout(() => setIsQuestionRevealed(true), 300);
+      return () => clearTimeout(timer);
+    } else {
+      setIsQuestionRevealed(false);
+    }
+  }, [loading, questions, currentIndex]);
 
   // Timer logic
   useEffect(() => {
-    if (!isTestStarted || isTestSubmitted || timeLeft <= 0) return;
+    if (!isTestStarted || isTestSubmitted || timeLeft <= 0 || isReviewMode) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -101,7 +133,7 @@ const TestEnvironmentPage = () => {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isTestStarted, isTestSubmitted, timeLeft]);
+  }, [isTestStarted, isTestSubmitted, timeLeft, isReviewMode]);
 
   const startTest = () => {
     setIsTestStarted(true);
@@ -118,17 +150,17 @@ const TestEnvironmentPage = () => {
   };
 
   const confirmExit = () => {
-    router.push('/questions');
+    router.back();
   };
 
   const handleOptionSelect = (index, optionIndex) => {
-    if (isTestSubmitted) return;
+    if (isTestSubmitted || isReviewMode) return;
     setAnswers(prev => ({ ...prev, [index]: optionIndex }));
     setStatus(prev => ({ ...prev, [index]: 'answered' }));
   };
 
   const toggleMarkForReview = (index) => {
-    if (isTestSubmitted) return;
+    if (isTestSubmitted || isReviewMode) return;
     setStatus(prev => ({
       ...prev,
       [index]: prev[index] === 'marked' ? (answers[index] !== undefined ? 'answered' : 'visited') : 'marked'
@@ -156,12 +188,38 @@ const TestEnvironmentPage = () => {
   };
 
   const clearResponse = (index) => {
-    if (isTestSubmitted) return;
+    if (isTestSubmitted || isReviewMode) return;
     const newAnswers = { ...answers };
     delete newAnswers[index];
     setAnswers(newAnswers);
     setStatus(prev => ({ ...prev, [index]: 'visited' }));
   };
+
+  const startReviewMode = () => {
+    setIsReviewMode(true);
+    setCurrentIndex(0);
+    window.scrollTo(0, 0);
+  };
+
+  const fetchFullQuestion = async (index) => {
+    if (fullQuestions[index]) return;
+    const q = questions[index];
+    setLoadingFullQuestions(prev => ({ ...prev, [index]: true }));
+    try {
+      const res = await api.get(`/questions/public/${q._id}`);
+      setFullQuestions(prev => ({ ...prev, [index]: res.data }));
+    } catch (err) {
+      console.error('Failed to load full question data', err);
+    } finally {
+      setLoadingFullQuestions(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (isReviewMode) {
+      fetchFullQuestion(currentIndex);
+    }
+  }, [currentIndex, isReviewMode]);
 
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -193,25 +251,25 @@ const TestEnvironmentPage = () => {
         unattempted++;
       } else if (userAns === correctAns) {
         correct++;
-        if (examName.toUpperCase() === 'NIMCET') {
+        if ((examName || '').toUpperCase() === 'NIMCET') {
           const sub = (q.subject || '').toUpperCase();
           if (sub === 'MATHEMATICS') score += 12;
           else if (sub === 'COMPUTER') score += 6;
           else if (sub === 'ENGLISH') score += 4;
           else score += 6;
         } else {
-          score += (EXAM_CONFIGS[examName.toUpperCase()]?.correct || 4);
+          score += (EXAM_CONFIGS[(examName || '').toUpperCase()]?.correct || 1);
         }
       } else {
         incorrect++;
-        if (examName.toUpperCase() === 'NIMCET') {
+        if ((examName || '').toUpperCase() === 'NIMCET') {
           const sub = (q.subject || '').toUpperCase();
           if (sub === 'MATHEMATICS') score -= 3;
           else if (sub === 'COMPUTER') score -= 1.5;
           else if (sub === 'ENGLISH') score -= 1;
           else score -= 1.5;
         } else {
-          score += (EXAM_CONFIGS[examName.toUpperCase()]?.incorrect || -1);
+          score += (EXAM_CONFIGS[(examName || '').toUpperCase()]?.incorrect || 0);
         }
       }
     });
@@ -220,9 +278,19 @@ const TestEnvironmentPage = () => {
   }, [isTestSubmitted, questions, answers, examName]);
 
   const maxMarkString = useMemo(() => {
-     if (examName.toUpperCase() === 'NIMCET') return "1000";
-     return questions.length * (EXAM_CONFIGS[examName.toUpperCase()]?.correct || 4);
-  }, [examName, questions.length]);
+     if ((examName || '').toUpperCase() === 'NIMCET') {
+        return questions.reduce((acc, q) => {
+          const sub = (q.subject || '').toUpperCase();
+          if (sub === 'MATHEMATICS') return acc + 12;
+          if (sub === 'COMPUTER') return acc + 6;
+          if (sub === 'ENGLISH') return acc + 4;
+          return acc + 6;
+        }, 0).toString();
+     }
+     let config = EXAM_CONFIGS[(examName || '').toUpperCase()];
+     if (!config) config = { correct: 1 };
+     return (questions.length * config.correct).toString();
+  }, [examName, questions]);
 
   if (loading) {
     return (
@@ -284,26 +352,37 @@ const TestEnvironmentPage = () => {
             <span className={styles.exitBtnText}>Exit</span>
           </button>
           <div className={styles.examInfo}>
-            <h1>{examName.toUpperCase()} Mock Test</h1>
+            <h1>{(examName || 'Mock').toUpperCase()} Mock Test</h1>
             <span>{topic || subject || 'Full Paper'}</span>
           </div>
         </div>
         
-        {isTestStarted && !isTestSubmitted && (
+        {isTestStarted && !isTestSubmitted && !isReviewMode && (
           <div className={`${styles.timer} ${timeLeft < 300 ? styles.timerUrgent : ''}`}>
             <Clock size={16} />
             <span>{formatTime(timeLeft)}</span>
           </div>
         )}
+        {isReviewMode && (
+          <div className={styles.timerBadge}>
+             <Clock size={16} /> 
+             <span>Review Mode</span>
+          </div>
+        )}
 
         <div className={styles.headerRight}>
-          {isTestStarted && !isTestSubmitted && (
+          {isTestStarted && !isTestSubmitted && !isReviewMode && (
             <>
               <button className={styles.menuBtn} onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label="Question palette">
                 <LayoutGrid size={20} />
               </button>
               <button className={styles.submitBtn} onClick={submitTest}>Submit</button>
             </>
+          )}
+          {isReviewMode && (
+             <button className={styles.menuBtn} onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label="Question palette">
+                <LayoutGrid size={20} />
+             </button>
           )}
         </div>
       </header>
@@ -315,7 +394,7 @@ const TestEnvironmentPage = () => {
             <div className={styles.statsRow}>
               <div className={styles.infoCard}>
                 <span>Duration</span>
-                <span>{EXAM_CONFIGS[examName.toUpperCase()]?.time || 120} Min</span>
+                <span>{EXAM_CONFIGS[(examName || '').toUpperCase()]?.time || 60} Min</span>
               </div>
               <div className={styles.infoCard}>
                 <span>Total Questions</span>
@@ -333,7 +412,7 @@ const TestEnvironmentPage = () => {
                  <li>The clock will be set at the server. The countdown timer will help you manage your time.</li>
                  <li>When the timer reaches zero, the examination will end by itself.</li>
                  <li>The Question Palette shows the status of each question using different colors.</li>
-                 {examName.toUpperCase() === 'NIMCET' ? (
+                 {((examName || '').toUpperCase() === 'NIMCET') ? (
                    <>
                     <li><strong>Mathematics:</strong> +12 / -3</li>
                     <li><strong>Analytical Ability:</strong> +6 / -1.5</li>
@@ -341,7 +420,7 @@ const TestEnvironmentPage = () => {
                     <li><strong>General English:</strong> +4 / -1</li>
                    </>
                  ) : (
-                   <li><strong>Marking:</strong> +{EXAM_CONFIGS[examName.toUpperCase()]?.correct || 4} / {EXAM_CONFIGS[examName.toUpperCase()]?.incorrect || -1}</li>
+                   <li><strong>Marking:</strong> +{EXAM_CONFIGS[(examName || '').toUpperCase()]?.correct || 1} / {EXAM_CONFIGS[(examName || '').toUpperCase()]?.incorrect || 0}</li>
                  )}
                </ul>
             </div>
@@ -386,8 +465,8 @@ const TestEnvironmentPage = () => {
             </div>
 
             <div className={styles.resultsActions}>
-              <button className={styles.primaryBtn} onClick={() => window.location.reload()}>Re-attempt</button>
-              <button className={styles.secondaryBtn} onClick={() => router.push('/questions')}>Go to Question Bank</button>
+              <button className={styles.primaryBtn} onClick={startReviewMode} style={{background: '#1e293b'}}>Review Answers & Solutions</button>
+              <button className={styles.secondaryBtn} onClick={() => router.back()}>Exit to Resources</button>
             </div>
           </div>
         </div>
@@ -397,43 +476,84 @@ const TestEnvironmentPage = () => {
             {/* Question Viewer */}
             <section className={styles.questionSection}>
               <div className={styles.questionHeader}>
-                <span className={styles.qNumber}>Q {currentIndex + 1} / {questions.length}</span>
+                <span className={styles.qNumber}>
+                   {isReviewMode ? `Reviewing Q ${currentIndex + 1} / ${questions.length}` : `Q ${currentIndex + 1} / ${questions.length}`}
+                </span>
                 <div className={styles.qActions}>
-                  <button 
-                    className={`${styles.actionBtn} ${status[currentIndex] === 'marked' ? styles.actionActive : ''}`}
-                    onClick={() => toggleMarkForReview(currentIndex)}
-                  >
-                    <Flag size={14} /> <span className={styles.actionBtnText}>Mark</span>
-                  </button>
+                  {!isReviewMode && (
+                    <button 
+                      className={`${styles.actionBtn} ${status[currentIndex] === 'marked' ? styles.actionActive : ''}`}
+                      onClick={() => toggleMarkForReview(currentIndex)}
+                    >
+                      <Flag size={14} /> <span className={styles.actionBtnText}>Mark</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
               <div className={styles.questionBody}>
-                <div className={styles.questionText}>
-                  <MathPreview latexString={questions[currentIndex]?.questionText} />
+                <div className={`${styles.questionText} ${isQuestionRevealed ? styles.revealed : styles.hidden}`}>
+                  <MathPreview latexString={fullQuestions[currentIndex]?.questionText || questions[currentIndex]?.questionText} />
                 </div>
 
-                {questions[currentIndex]?.questionImage && (
+                {(fullQuestions[currentIndex]?.questionImage || questions[currentIndex]?.questionImage) && (
                   <div className={styles.qImage}>
-                    <img src={questions[currentIndex].questionImage} alt="Question" />
+                    <img src={fullQuestions[currentIndex]?.questionImage || questions[currentIndex].questionImage} alt="Question" />
                   </div>
                 )}
 
-                <div className={styles.optionsGrid}>
-                  {questions[currentIndex]?.options?.map((option, idx) => (
-                    <button
-                      key={idx}
-                      className={`${styles.optionBtn} ${answers[currentIndex] === idx ? styles.selectedOption : ''}`}
-                      onClick={() => handleOptionSelect(currentIndex, idx)}
-                    >
-                      <span className={styles.optionLabel}>{String.fromCharCode(65 + idx)}</span>
-                      <div className={styles.optionContent}>
-                        <MathPreview latexString={typeof option === 'string' ? option : option?.text || ''} />
-                        {option?.imageURL && <img src={option.imageURL} alt="Option" className={styles.optionImage} />}
-                      </div>
-                    </button>
-                  ))}
+                <div className={`${styles.optionsGrid} ${isQuestionRevealed ? styles.revealed : styles.hidden}`}>
+                  {(fullQuestions[currentIndex]?.options || questions[currentIndex]?.options)?.map((option, idx) => {
+                    const isSelected = answers[currentIndex] === idx;
+                    const isCorrectNode = isReviewMode && option.isCorrect;
+                    const isWrongNode = isReviewMode && isSelected && !option.isCorrect;
+                    
+                    let itemClass = styles.optionBtn;
+                    if (!isReviewMode && isSelected) itemClass += ` ${styles.selectedOption}`;
+                    if (isCorrectNode) itemClass += ` ${styles.correctOption}`;
+                    if (isWrongNode) itemClass += ` ${styles.incorrectOption}`;
+
+                    return (
+                      <button
+                        key={idx}
+                        className={itemClass}
+                        onClick={() => handleOptionSelect(currentIndex, idx)}
+                        style={{ cursor: isReviewMode ? 'default' : 'pointer' }}
+                      >
+                        <span className={styles.optionLabel}>{String.fromCharCode(65 + idx)}</span>
+                        <div className={styles.optionContent}>
+                          <MathPreview latexString={typeof option === 'string' ? option : option?.text || ''} />
+                          {option?.imageURL && <img src={option.imageURL} alt="Option" className={styles.optionImage} />}
+                        </div>
+                        {isCorrectNode && <Check className={styles.correctIcon} size={24} />}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {isReviewMode && (
+                  <div className={styles.solutionBox}>
+                     <div className={styles.solutionTitle}><Check size={18} /> Solution & Explanation</div>
+                     {loadingFullQuestions[currentIndex] ? (
+                       <div>Loading solution detailed resources...</div>
+                     ) : (
+                       <div className={styles.solutionContent}>
+                          {fullQuestions[currentIndex]?.explanationText && <MathPreview latexString={fullQuestions[currentIndex].explanationText} />}
+                          {!fullQuestions[currentIndex]?.explanationText && !fullQuestions[currentIndex]?.explanationImageURL && !fullQuestions[currentIndex]?.videoURL && (
+                            <p>No detailed explanation available. The correct option is highlighted above.</p>
+                          )}
+                          {fullQuestions[currentIndex]?.explanationImageURL && (
+                            <img src={fullQuestions[currentIndex].explanationImageURL} alt="Explanation" style={{maxWidth: '100%', borderRadius: 8, marginTop: 16}} />
+                          )}
+                          {fullQuestions[currentIndex]?.videoURL && (
+                            <div style={{marginTop: 16, height: 400}}>
+                               <ReactPlayer url={fullQuestions[currentIndex].videoURL} width="100%" height="100%" controls />
+                            </div>
+                          )}
+                       </div>
+                     )}
+                  </div>
+                )}
               </div>
 
               <div className={styles.footerNav}>
@@ -445,12 +565,14 @@ const TestEnvironmentPage = () => {
                   <ChevronLeft size={18} /> <span className={styles.navBtnLabel}>Prev</span>
                 </button>
                 
-                <button className={styles.clearBtn} onClick={() => clearResponse(currentIndex)}>Clear</button>
+                {!isReviewMode && answers[currentIndex] !== undefined && (
+                   <button className={styles.clearBtn} onClick={() => clearResponse(currentIndex)}>Clear</button>
+                )}
 
-                {currentIndex === questions.length - 1 ? (
+                {!isReviewMode && currentIndex === questions.length - 1 ? (
                   <button className={styles.submitBtnInline} onClick={submitTest}>Submit</button>
                 ) : (
-                  <button className={styles.navBtnPrimary} onClick={nextQuestion}>
+                  <button className={styles.navBtnPrimary} onClick={nextQuestion} disabled={currentIndex === questions.length - 1}>
                     <span className={styles.navBtnLabel}>Next</span> <ChevronRight size={18} />
                   </button>
                 )}

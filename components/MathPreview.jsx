@@ -8,12 +8,18 @@ const MathPreview = ({ latexString = '', className = '', style = {} }) => {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
 
+  const isAlreadyKaTeX = typeof latexString === 'string' && (latexString.includes('class="katex"') || latexString.includes('class=\'katex\''));
+
   // Clean the string: MathJax 3 hates &nbsp; and some other HTML artifacts inside LaTeX
   const cleaned = React.useMemo(() => {
     if (!latexString) return '';
     let strToClean = typeof latexString === 'string' ? latexString : String(latexString || '');
     if (typeof latexString === 'object') strToClean = latexString.text || '';
     
+    if (isAlreadyKaTeX) {
+      return strToClean; // Return exact HTML from backend to avoid corrupting KaTeX elements
+    }
+
     return strToClean
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
@@ -21,9 +27,9 @@ const MathPreview = ({ latexString = '', className = '', style = {} }) => {
       // Ensure LaTeX blocks have proper spacing
       .replace(/(\$|\\\(|\\\[)/g, ' $1')
       .replace(/(\$|\\\)|\\\])/g, '$1 ');
-  }, [latexString]);
+  }, [latexString, isAlreadyKaTeX]);
 
-  useMathJax(mounted ? [cleaned] : []);
+  useMathJax(mounted && !isAlreadyKaTeX ? [cleaned] : []);
 
   return (
     <div

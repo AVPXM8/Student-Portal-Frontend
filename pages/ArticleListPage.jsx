@@ -1,12 +1,9 @@
-"use client";
-import Link from 'next/link';
-import {  useSearchParams , useRouter } from 'next/navigation';
 import React, { useState, useEffect, useMemo } from 'react';
-
-import api from "@/api";
-import Breadcrumb from '@/components/Breadcrumb';
+import { Link, useSearchParams } from 'react-router-dom';
+import api from '../api';
+import { Helmet } from 'react-helmet-async';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import styles from "./ArticleListPage.module.css";
+import styles from './ArticleListPage.module.css';
 
 // Safe excerpt builder (client-side)
 const toPlainText = (html = '') => {
@@ -24,13 +21,12 @@ const FALLBACK_IMAGE =
   'https://res.cloudinary.com/dwmj6up6j/image/upload/f_auto,q_auto,w_1200/v1752687380/rqtljy0wi1uzq3itqxoe.png';
 
 const SITE_ORIGIN = 'https://question.maarula.in';
-const POSTS_PER_PAGE = 13;
+const POSTS_PER_PAGE = 12;
 
 const ArticleListPage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Pagination state
   const [totalPosts, setTotalPosts] = useState(0);
@@ -67,7 +63,7 @@ const ArticleListPage = () => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       const newParams = new URLSearchParams(searchParams);
       newParams.set('page', String(page));
-      router.push('?' + newParams.toString(), { scroll: false });
+      setSearchParams(newParams);
     }
   };
 
@@ -137,7 +133,7 @@ const ArticleListPage = () => {
   }, [posts, currentPage, totalPosts]);
 
   const blogSchema = useMemo(() => {
-    const items = posts.slice(0, 13).map(p => ({
+    const items = posts.slice(0, 12).map(p => ({
       '@type': 'BlogPosting',
       headline: p.title,
       description: excerpt(p.content, 180),
@@ -163,28 +159,42 @@ const ArticleListPage = () => {
 
   return (
     <div className={styles.container}>
-      
+      <Helmet>
+        <title>{currentPage > 1 ? `Page ${currentPage} | ` : ''}Articles & Exam News | Maarula Classes</title>
+        <meta
+          name="description"
+          content="Latest exam updates, strategy guides, and insights for NIMCET, CUET-PG, and other MCA entrances from Maarula Classes."
+        />
+        <link rel="canonical" href={`${SITE_ORIGIN}/articles${currentPage > 1 ? `?page=${currentPage}` : ''}`} />
+
+        {/* Open Graph / Twitter */}
+        <meta property="og:title" content="Latest Articles & Exam News for MCA Aspirants" />
+        <meta
+          property="og:description"
+          content="Stay updated with preparation strategies and insights from Maarula Classes."
+        />
+        <meta property="og:url" content={`${SITE_ORIGIN}/articles`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content={FALLBACK_IMAGE} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={FALLBACK_IMAGE} />
+        <meta name="twitter:title" content="Latest Articles & Exam News for MCA Aspirants" />
+        <meta
+          name="twitter:description"
+          content="Stay updated with preparation strategies and insights from Maarula Classes."
+        />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(blogSchema)}</script>
+      </Helmet>
+
       {/* Header */}
       <header className={styles.pageHeader}>
-        <div className={styles.headerBreadcrumb}>
-           <Breadcrumb 
-             items={[
-               { label: 'Home', href: '/' },
-               { label: 'Updates', href: '/articles' }
-             ]} 
-           />
-        </div>
-        
-        <div className={styles.badgeRow}>
-           <div className={styles.liveBadge} aria-hidden="true">
-             <span className={styles.pulseDot}></span>
-             Live Updates
-           </div>
-        </div>
-
-        <h1 className={styles.h1}>Stay Informed with <span>Latest Exam Updates</span></h1>
+        <h1 className={styles.h1}>Articles &amp; Exam News</h1>
         <p className={styles.subhead}>
-          Your daily source for NIMCET, CUET-PG exam news, preparation strategies, and expert insights from Maarula Classes.
+          The latest updates, strategies, and insights for NIMCET & CUET-PG aspirants.
         </p>
       </header>
 
@@ -193,7 +203,8 @@ const ArticleListPage = () => {
 
       {/* Featured article (page 1 only) */}
       {!loading && featured && (
-        <Link href={`/articles/${featured.slug}`}
+        <Link
+          to={`/articles/${featured.slug}`}
           className={styles.featuredCard}
           aria-label={`Read: ${featured.title}`}
         >
@@ -221,7 +232,8 @@ const ArticleListPage = () => {
       {!loading && gridPosts.length > 0 && (
         <section aria-label="More articles" className={styles.postGrid}>
           {gridPosts.map(post => (
-            <Link href={`/articles/${post.slug}`}
+            <Link
+              to={`/articles/${post.slug}`}
               key={post._id}
               className={styles.postCard}
               aria-label={`Read: ${post.title}`}

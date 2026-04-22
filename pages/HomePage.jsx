@@ -1,17 +1,20 @@
-"use client";
 
 import React, { lazy, Suspense, useMemo, useEffect, useRef } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import styles from "./HomePage.module.css";
-import Image from "next/image";
 
-import { students } from '@/data/students';
+// Data & components you already have
+import { students } from "../data/students";
+import StudentCard from "../components/StudentCard";
 
+// Lazy parts (below the fold / heavy)
 const SuccessCarousel = lazy(() => import("../components/SuccessCarousel"));
 const AwardCarousel  = lazy(() => import("../components/AwardCarousel"));
-const ClassroomSlider = lazy(() => import("../components/ClassroomSlider"));
 
-function RevealSection({ children, className = "", style = {} }) {
+const SITE_URL = "https://question.maarula.in";
+
+function RevealSection({ children, className = "" }) {
   const sectionRef = useRef(null);
   
   useEffect(() => {
@@ -29,21 +32,57 @@ function RevealSection({ children, className = "", style = {} }) {
     }
 
     return () => {
-      if (sectionRef.current) observer.unobserve(sectionRef.current);
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
     };
   }, []);
 
   return (
-    <div ref={sectionRef} className={`${styles.reveal} ${className}`} style={style}>
+    <div ref={sectionRef} className={`${styles.reveal} ${className}`}>
       {children}
     </div>
   );
 }
 
-export default function HomeClient() {
+export default function HomePage() {
+  // Top 8 from 2025 (stable sort that tolerates missing numbers)
+  const homepageStudents = useMemo(() => {
+    const getRank = (s) =>
+      parseInt(String(s?.achievement ?? "").replace(/[^0-9]/g, ""), 10) || 9999;
+    return students
+      .filter((s) => s.year === 2025)
+      .sort((a, b) => getRank(a) - getRank(b))
+      .slice(0, 8);
+  }, []);
+
+  // Meta + JSON-LD
+  const title = "Mathem Solvex | NIMCET & CUET-PG PYQ Bank | Maarula Classes";
+  const description = "Access 10+ years of NIMCET, CUET-PG, and MCA entrance PYQs with expert video solutions. Improve your score with Mathem Solvex by Maarula Classes.";
 
   return (
     <div className={styles.homePage}>
+      <Helmet>
+        <html lang="en" />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta name="keywords" content="NIMCET PYQ, CUET PG MCA, MCA Entrance Previous Year Questions, Maarula Classes, Mathem Solvex" />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={`${SITE_URL}/`} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/`} />
+        <meta property="og:image" content="https://res.cloudinary.com/dwmj6up6j/image/upload/v1752687380/rqtljy0wi1uzq3itqxoe.png" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+      </Helmet>
+
       {/* HERO SECTION */}
       <header className={styles.heroSection}>
         <Suspense fallback={<div className={styles.skeletonHero} />}>
@@ -59,50 +98,28 @@ export default function HomeClient() {
           </h1>
 
           <p className={styles.lede}>
-            Unlock access to the most comprehensive <strong>Previous Year Questions (PYQ)</strong>, 
-            expert-curated <strong>Study Material</strong>, and <strong>Mock Test Series</strong> for 
-            NIMCET, CUET PG, and major MCA entrances.
+            The most comprehensive <strong>Previous Year Questions (PYQ)</strong> bank for 
+            NIMCET, CUET-PG, and major MCA entrances. Expert-verified solutions designed 
+            to help you ace your exams.
           </p>
 
           <div className={styles.pyqButtons}>
-            <Link href="/questions?exam=NIMCET" className={styles.primaryBtn}>
+            <Link to="/questions?exam=NIMCET" className={styles.primaryBtn}>
               Explore NIMCET PYQs
             </Link>
-            <Link href="/questions?exam=CUET PG" className={styles.secondaryBtn}>
-              Take Mock Test
+            <Link to="/questions?exam=CUET-PG" className={styles.secondaryBtn}>
+              Explore CUET-PG PYQs
             </Link>
           </div>
 
           <div className={styles.chipRow}>
-            <Link href="/questions?exam=NIMCET&year=2024" className={styles.chip}>NIMCET 2024</Link>
-            <Link href="/questions?exam=CUET PG&year=2024" className={styles.chip}>CUET PG 2024</Link>
-            <Link href="/questions?exam=NIMCET&subject=Mathematics" className={styles.chip}>Mathematics</Link>
-            <Link href="/questions?exam=CUET PG&subject=Reasoning" className={styles.chip}>Reasoning</Link>
-            <Link href="/articles" className={styles.chip}>Practice Tips</Link>
+            <Link to="/questions?exam=NIMCET&year=2024" className={styles.chip}>NIMCET 2024</Link>
+            <Link to="/questions?exam=CUET-PG&year=2024" className={styles.chip}>CUET-PG 2024</Link>
+            <Link to="/questions?exam=NIMCET&subject=Mathematics" className={styles.chip}>Mathematics</Link>
+            <Link to="/questions?exam=CUET-PG&subject=Reasoning" className={styles.chip}>Reasoning</Link>
+            <Link to="/articles" className={styles.chip}>Practice Tips</Link>
           </div>
         </RevealSection>
-      </section>
-
-      {/* STATS COUNTER SECTION */}
-      <section className={styles.statsSection}>
-        <div className={styles.statsGrid}>
-          <RevealSection className={styles.statBox}>
-            <span className={styles.statNumber}>1000+</span>
-            <span className={styles.statLabel}>Selections</span>
-          </RevealSection>
-          <RevealSection className={styles.statBox} style={{ transitionDelay: '0.1s' }}>
-            <span className={styles.statNumber}>5000+</span>
-            <span className={styles.statLabel}>Solved PYQs</span>
-          </RevealSection>
-          <RevealSection className={styles.statBox} style={{ transitionDelay: '0.2s' }}>
-            <span className={styles.statNumber}>200+</span>
-            <span className={styles.statLabel}>Mock Tests</span>
-          </RevealSection>
-          <RevealSection className={styles.statBox} style={{ transitionDelay: '0.3s' }}>
-            <span className={styles.statNumber}>12+</span>
-            <span className={styles.statLabel}>Years Excellence</span>
-          </RevealSection>
-        </div>
       </section>
 
       {/* FEATURES SECTION */}
@@ -116,17 +133,14 @@ export default function HomeClient() {
           <RevealSection className={styles.featureCard}>
             <h3>Expert Solutions</h3>
             <p>Step-by-step verified explanations and video solutions for every complex problem.</p>
-            <Link href="/questions" className={styles.featureLink}>Browse Questions →</Link>
           </RevealSection>
           <RevealSection className={styles.featureCard} style={{ transitionDelay: '0.1s' }}>
             <h3>Topic-wise Filter</h3>
             <p>Target your weak areas by filtering questions by subject, topic, year, and difficulty.</p>
-            <Link href="/questions?exam=NIMCET&subject=Mathematics" className={styles.featureLink}>Try Filtering →</Link>
           </RevealSection>
           <RevealSection className={styles.featureCard} style={{ transitionDelay: '0.2s' }}>
             <h3>Real Exam Interface</h3>
             <p>Practice in an environment that mimics the actual exam to build speed and confidence.</p>
-            <Link href="/test?exam=NIMCET&subject=Mathematics&topic=Calculus&limit=20" className={styles.featureLink}>Start Practice Test →</Link>
           </RevealSection>
         </div>
       </section>
@@ -143,12 +157,27 @@ export default function HomeClient() {
         </Suspense>
 
         <div className={styles.viewAllContainer}>
-          <Link href="/results" className={styles.viewAllButton}>
+          <Link to="/results" className={styles.viewAllButton}>
             View Full Results (2023–2025) →
           </Link>
         </div>
       </section>
 
+      {/* STUDENT CARDS */}
+      <section className={styles.resultsSection}>
+        <RevealSection className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Meet Our 2025 Stars</h2>
+          <p className={styles.sectionSubtitle}>Top rankers from the latest batch leading the way.</p>
+        </RevealSection>
+        
+        <div className={styles.resultsGrid}>
+          {homepageStudents.map((s, index) => (
+            <RevealSection key={s.id} style={{ transitionDelay: `${index * 0.05}s` }}>
+              <StudentCard student={s} />
+            </RevealSection>
+          ))}
+        </div>
+      </section>
 
       {/* ABOUT MAARULA */}
       <section className={styles.introSection}>
@@ -171,9 +200,10 @@ export default function HomeClient() {
         </RevealSection>
 
         <RevealSection className={styles.introImageContainer}>
-          <Suspense fallback={<div className={styles.skeleton} />}>
-            <ClassroomSlider />
-          </Suspense>
+          <div className={styles.dualImageGrid}>
+            <img src="/maarula_classroom1.jpg" alt="Maarula Classes Learning environment" className={styles.introImage} loading="lazy" />
+            <img src="/maarula_classromm2.jpg" alt="Academic success at Maarula" className={styles.introImage} loading="lazy" />
+          </div>
         </RevealSection>
       </section>
     </div>
