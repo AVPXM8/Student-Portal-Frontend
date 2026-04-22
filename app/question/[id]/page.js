@@ -100,7 +100,9 @@ export async function generateMetadata({ params }) {
 function buildQAPageJsonLd(q, id) {
   const plainQ = toPlainTextSSR(q.questionText).slice(0, 500);
   const correctOpt = q.options?.find((o) => o.isCorrect);
-  const correctText = correctOpt ? toPlainTextSSR(correctOpt.text).slice(0, 300) : '';
+  const correctText = correctOpt
+    ? toPlainTextSSR(correctOpt.text).slice(0, 300)
+    : 'Correct answer available in explanation section';
   const explanationText = q.explanationText
     ? toPlainTextSSR(q.explanationText).slice(0, 800)
     : '';
@@ -124,22 +126,18 @@ function buildQAPageJsonLd(q, id) {
       answerCount: 1,
       datePublished: q.createdAt || new Date().toISOString(),
       author: {
-        '@type': 'Organization',
-        name: 'Maarula Classes',
-        url: 'https://maarula.in',
+        '@type': 'Person',
+        name: 'Vivek Kumar'
       },
-      acceptedAnswer: correctText
-        ? {
-            '@type': 'Answer',
-            text: answerBody,
-            url: `${SITE_URL}/question/${id}#explanation-section`,
-            author: {
-              '@type': 'Organization',
-              name: 'Maarula Classes',
-              url: 'https://maarula.in',
-            },
-          }
-        : undefined,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: answerBody || 'Refer explanation section for detailed solution.',
+        url: `${SITE_URL}/question/${id}#explanation-section`,
+        author: {
+          '@type': 'Person',
+          name: 'Vivek Kumar'
+        }
+      },
     },
     about: {
       '@type': 'Thing',
@@ -228,8 +226,8 @@ export default async function Page({ params, searchParams }) {
     : '';
 
   /* ── Build JSON-LD ── */
-  const jsonLd      = question?.questionText ? buildQAPageJsonLd(question, id) : null;
-  const faqJsonLd   = question?.questionText ? buildFAQJsonLd(question) : null;
+  const jsonLd = question?.questionText ? buildQAPageJsonLd(question, id) : null;
+  const faqJsonLd = question?.questionText ? buildFAQJsonLd(question) : null;
 
   /* ── Not found state ── */
   if (!question?.questionText) {
