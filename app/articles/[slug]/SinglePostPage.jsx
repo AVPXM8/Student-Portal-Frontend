@@ -8,6 +8,7 @@ import ReactPlayer from 'react-player';
 
 import api from "@/api";
 import useMathJax from '@/hooks/useMathJax';
+import Breadcrumb from '@/components/Breadcrumb';
 import styles from "./SinglePostPage.module.css";
 
 import {
@@ -23,19 +24,7 @@ import {
 const stripHtml = (s = "") =>
   s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-const truncate = (s = "", n = 160) =>
-  s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s;
-
-const esc = (s = "") =>
-  s.replace(/[&<>"']/g, (c) =>
-    ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c])
-  );
+/* truncate & esc removed — not used in this component */
 
 const baseSlug = (s = "") =>
   s
@@ -55,16 +44,19 @@ function slugifyUnique(text, used) {
   return seen > 0 ? `${base}-${seen + 1}` : base;
 }
 
+const FALLBACK_IMAGE = "https://res.cloudinary.com/dwmj6up6j/image/upload/v1752687380/rqtljy0wi1uzq3itqxoe.png";
+
 /* ===========================================================
    Component
    =========================================================== */
-export default function SinglePostPage() {
+export default function SinglePostPage({ initialPost, initialRecentPosts, initialRelatedPosts }) {
   const { slug } = useParams();
 
   // Hooks in fixed order
-  const [post, setPost] = useState(null);
-  const [recentPosts, setRecentPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [post, setPost] = useState(initialPost || null);
+  const [recentPosts, setRecentPosts] = useState(initialRecentPosts || []);
+  const [relatedPosts, setRelatedPosts] = useState(initialRelatedPosts || []);
+  const [loading, setLoading] = useState(!initialPost);
   const [toc, setToc] = useState([]);
   const contentRef = useRef(null);
 
@@ -79,8 +71,13 @@ export default function SinglePostPage() {
     return Math.max(1, Math.round((words || 200) / 200)); // ~200 wpm
   }, [post?.content]);
 
-  // Fetch data for the page
+  // Fetch data for the page (only if not provided by SSR or if slug changes)
   useEffect(() => {
+    if (initialPost && post && post.slug === slug) {
+      setLoading(false);
+      return;
+    }
+
     let ok = true;
     (async () => {
       try {
@@ -93,12 +90,21 @@ export default function SinglePostPage() {
 
         if (!ok) return;
 
-        setPost(pRes.data);
+        const currentPost = pRes.data;
+        setPost(currentPost);
 
         const arr = Array.isArray(rRes.data)
           ? rRes.data
           : rRes.data?.posts || [];
         setRecentPosts(arr.filter((p) => p.slug !== slug).slice(0, 5));
+
+        // Also fetch related if not provided
+        if (currentPost.category) {
+          const relRes = await api.get(`/posts?category=${encodeURIComponent(currentPost.category)}&limit=6`);
+          const relData = Array.isArray(relRes.data) ? relRes.data : (relRes.data?.posts || []);
+          setRelatedPosts(relData.filter(p => p.slug !== slug).slice(0, 4));
+        }
+
       } catch (e) {
         console.error("Failed to fetch post data", e);
       } finally {
@@ -108,7 +114,7 @@ export default function SinglePostPage() {
     return () => {
       ok = false;
     };
-  }, [slug]);
+  }, [slug, initialPost]);
 
   // Enhance rendered HTML & build TOC safely
   useEffect(() => {
@@ -141,10 +147,13 @@ export default function SinglePostPage() {
         fig.className = styles.figure;
         img.replaceWith(fig);
         fig.appendChild(img);
-        if (img.alt) {
+        
+        // If the image is inside the post content, we try to use its alt or title as caption
+        const captionText = img.alt || img.title;
+        if (captionText) {
           const cap = document.createElement("figcaption");
           cap.className = styles.figcaption;
-          cap.textContent = img.alt;
+          cap.textContent = captionText;
           fig.appendChild(cap);
         }
       }
@@ -191,300 +200,271 @@ export default function SinglePostPage() {
     setToc(list);
   }, [post]);
 
-  if (loading) return <div className={styles.loading}>Loading article…</div>;
+  if (loading && !post) return <div className={styles.loading}>Loading article…</div>;
   if (!post) return <div className={styles.loading}>Article not found.</div>;
 
   /* ---------- SEO ---------- */
   const pageUrl = `https://question.maarula.in/articles/${post.slug}`;
-  const rawDesc = post.metaDescription || stripHtml(post.content || "");
-  const pageDescription = truncate(rawDesc, 160);
-  const pageTitle = `${post.title} | Maarula Classes`;
-  const imageUrl =
-    post.featuredImage ||
-    "https://res.cloudinary.com/dwmj6up6j/image/upload/v1752687380/rqtljy0wi1uzq3itqxoe.png";
-
-  const publishedISO = post.createdAt
-    ? new Date(post.createdAt).toISOString()
-    : undefined;
-  const modifiedISO = post.updatedAt
-    ? new Date(post.updatedAt).toISOString()
-    : publishedISO;
-
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: pageDescription,
-    image: imageUrl ? [imageUrl] : undefined,
-    datePublished: publishedISO,
-    dateModified: modifiedISO,
-    author: post.author
-      ? { "@type": "Person", name: post.author }
-      : { "@type": "Organization", name: "Maarula Classes" },
-    publisher: {
-      "@type": "Organization",
-      name: "Maarula Classes",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://res.cloudinary.com/dwmj6up6j/image/upload/v1752687380/rqtljy0wi1uzq3itqxoe.png",
-      },
-    },
-    mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
-  };
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://question.maarula.in/",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Articles",
-        item: "https://question.maarula.in/articles",
-      },
-      { "@type": "ListItem", position: 3, name: post.title, item: pageUrl },
-    ],
-  };
-
-  /* ---------- UI ---------- */
   const shareText = `${post.title} - ${pageUrl}`;
 
+  /* ---------- UI ---------- */
   return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+    <div className={styles.page}>
+      {/* Header */}
+      <header className={styles.header}>
+        <Breadcrumb 
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Articles', href: '/articles' },
+            { label: post.title }
+          ]} 
+        />
+        {post.category && <p className={styles.category}>{post.category}</p>}
+        <h1 className={styles.title}>{post.title}</h1>
+        <p className={styles.meta}>
+          <span>By Vivek Kumar</span>
+          <span className={styles.dot}>•</span>
+          <time dateTime={post.createdAt}>
+            {new Date(post.createdAt).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </time>
+          <span className={styles.dot}>•</span>
+          <span>{readingTime} min read</span>
+        </p>
+      </header>
 
-      <div className={styles.page}>
-        {/* Header */}
-        <header className={styles.header}>
-          {post.category && <p className={styles.category}>{post.category}</p>}
-          <h1 className={styles.title}>{post.title}</h1>
-          <p className={styles.meta}>
-            <span>By {post.author || "Maarula Classes"}</span>
-            <span className={styles.dot}>•</span>
-            <span>
-              {new Date(post.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-            <span className={styles.dot}>•</span>
-            <span>{readingTime} min read</span>
-          </p>
-        </header>
+      {post.featuredImage && (
+        <figure className={styles.heroFigure}>
+          <img
+            src={post.featuredImage}
+            alt={post.title}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            width="920"
+            height="518"
+          />
+          {post.imageCaption && <figcaption>{post.imageCaption}</figcaption>}
+        </figure>
+      )}
 
-        {post.featuredImage && (
-          <figure className={styles.heroFigure}>
-            <img
-              src={post.featuredImage}
-              alt={post.title}
-              loading="lazy"
-              decoding="async"
-            />
-            {post.imageCaption && <figcaption>{post.imageCaption}</figcaption>}
-          </figure>
-        )}
-
-        {/* Content + Sidebar */}
-        <div className={styles.container}>
-          <article className={styles.article}>
-            {/* Mobile TOC */}
-            {toc.length > 0 && (
-              <details className={styles.tocMobile}>
-                <summary>On this page</summary>
-                <nav aria-label="Table of contents">
-                  <ul>
-                    {toc.map((h) => (
-                      <li
-                        key={h.id}
-                        className={h.level === 3 ? styles.tocH3 : styles.tocH2}
-                      >
-                        <a href={`#${h.id}`}>{h.text}</a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </details>
-            )}
-
-            <div
-              ref={contentRef}
-              className={styles.postContent}
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-
-            {post.videoURL && (
-              <section className={styles.videoBlock}>
-                <h3 className={styles.h3}>Related Video Explanation</h3>
-                <div className={styles.playerWrap}>
-                  <ReactPlayer
-                    url={post.videoURL}
-                    className={styles.player}
-                    width="100%"
-                    height="100%"
-                    controls
-                  />
-                </div>
-              </section>
-            )}
-
-            <div className={styles.share}>
-              <span className={styles.shareLead}>
-                This information could help a friend — share:
-              </span>
-
-              <a
-                className={`${styles.social} ${styles.whatsapp}`}
-                href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Share on WhatsApp"
-              >
-                <FaWhatsapp />
-              </a>
-
-              <a
-                className={`${styles.social} ${styles.telegram}`}
-                href={`https://t.me/share/url?url=${encodeURIComponent(
-                  pageUrl
-                )}&text=${encodeURIComponent(post.title)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Share on Telegram"
-              >
-                <FaTelegram />
-              </a>
-
-              <a
-                className={`${styles.social} ${styles.facebook}`}
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                  pageUrl
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Share on Facebook"
-              >
-                <FaFacebook />
-              </a>
-
-              <a
-                className={`${styles.social} ${styles.twitter}`}
-                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                  pageUrl
-                )}&text=${encodeURIComponent(post.title)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Share on X"
-              >
-                <FaXTwitter />
-              </a>
-
-              <a
-                className={`${styles.social} ${styles.linkedin}`}
-                href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
-                  pageUrl
-                )}&title=${encodeURIComponent(post.title)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Share on LinkedIn"
-              >
-                <FaLinkedin />
-              </a>
-
-              <button
-                type="button"
-                className={`${styles.social} ${styles.copy}`}
-                aria-label="Copy link"
-                onClick={() => navigator.clipboard.writeText(pageUrl)}
-              >
-                <FaLink />
-              </button>
-            </div>
-          </article>
-
-          <aside className={`${styles.sidebar} ${styles.sidebarSticky}`}>
-            {toc.length > 0 && (
-              <div className={styles.widget}>
-                <h3 className={styles.widgetTitle}>On this page</h3>
-                <nav aria-label="Table of contents">
-                  <ul className={styles.tocList}>
-                    {toc.map((h) => (
-                      <li
-                        key={h.id}
-                        className={h.level === 3 ? styles.tocH3 : styles.tocH2}
-                      >
-                        <a href={`#${h.id}`}>{h.text}</a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </div>
-            )}
-
-            <div className={styles.widget}>
-              <h3 className={styles.widgetTitle}>Recent posts</h3>
-              <ul className={styles.recentList}>
-                {recentPosts.map((r) => (
-                  <li key={r._id}>
-                    <Link href={`/articles/${r.slug}`}
-                      className={styles.recentItem}
+      {/* Content + Sidebar */}
+      <div className={styles.container}>
+        <article className={styles.article}>
+          {/* Mobile TOC */}
+          {toc.length > 0 && (
+            <details className={styles.tocMobile}>
+              <summary>On this page</summary>
+              <nav aria-label="Table of contents">
+                <ul>
+                  {toc.map((h) => (
+                    <li
+                      key={h.id}
+                      className={h.level === 3 ? styles.tocH3 : styles.tocH2}
                     >
-                      <span className={styles.recentTitle}>{r.title}</span>
-                      <time className={styles.recentDate}>
-                        {new Date(r.createdAt).toLocaleDateString()}
-                      </time>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                      <a href={`#${h.id}`}>{h.text}</a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </details>
+          )}
 
-            {/* Internal linking widget for SEO */}
+          <div
+            ref={contentRef}
+            className={styles.postContent}
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+
+          {post.videoURL && (
+            <section className={styles.videoBlock}>
+              <h3 className={styles.h3}>Related Video Explanation</h3>
+              <div className={styles.playerWrap}>
+                <ReactPlayer
+                  url={post.videoURL}
+                  className={styles.player}
+                  width="100%"
+                  height="100%"
+                  controls
+                />
+              </div>
+            </section>
+          )}
+
+          <div className={styles.share}>
+            <span className={styles.shareLead}>
+              This information could help a friend — share:
+            </span>
+
+            <a
+              className={`${styles.social} ${styles.whatsapp}`}
+              href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share on WhatsApp"
+            >
+              <FaWhatsapp />
+            </a>
+
+            <a
+              className={`${styles.social} ${styles.telegram}`}
+              href={`https://t.me/share/url?url=${encodeURIComponent(
+                pageUrl
+              )}&text=${encodeURIComponent(post.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share on Telegram"
+            >
+              <FaTelegram />
+            </a>
+
+            <a
+              className={`${styles.social} ${styles.facebook}`}
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                pageUrl
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share on Facebook"
+            >
+              <FaFacebook />
+            </a>
+
+            <a
+              className={`${styles.social} ${styles.twitter}`}
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                pageUrl
+              )}&text=${encodeURIComponent(post.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share on X"
+            >
+              <FaXTwitter />
+            </a>
+
+            <a
+              className={`${styles.social} ${styles.linkedin}`}
+              href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+                pageUrl
+              )}&title=${encodeURIComponent(post.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share on LinkedIn"
+            >
+              <FaLinkedin />
+            </a>
+
+            <button
+              type="button"
+              className={`${styles.social} ${styles.copy}`}
+              aria-label="Copy link"
+              onClick={() => navigator.clipboard.writeText(pageUrl)}
+            >
+              <FaLink />
+            </button>
+          </div>
+
+          {/* Related Articles Section */}
+          {relatedPosts.length > 0 && (
+            <section className={styles.relatedSection}>
+              <h3 className={styles.h3}>Related Articles</h3>
+              <div className={styles.relatedGrid}>
+                {relatedPosts.map(rel => (
+                  <Link href={`/articles/${rel.slug}`} key={rel._id} className={styles.relatedCard}>
+                    <img 
+                      src={rel.featuredImage || FALLBACK_IMAGE} 
+                      alt={rel.title} 
+                      className={styles.relatedCardImage}
+                      loading="lazy"
+                    />
+                    <div className={styles.relatedCardContent}>
+                      <h4 className={styles.relatedCardTitle}>{rel.title}</h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </article>
+
+        <aside className={`${styles.sidebar} ${styles.sidebarSticky}`}>
+          {toc.length > 0 && (
             <div className={styles.widget}>
-              <h3 className={styles.widgetTitle}>Quick Links</h3>
-              <ul className={styles.recentList}>
-                <li>
-                  <Link href="/questions" className={styles.recentItem}>
-                    <span className={styles.recentTitle}>📚 Question Bank — 17 Years PYQs</span>
-                    <span className={styles.recentDate}>NIMCET, CUET PG & More</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/questions?exam=NIMCET" className={styles.recentItem}>
-                    <span className={styles.recentTitle}>🎯 NIMCET Previous Year Questions</span>
-                    <span className={styles.recentDate}>Practice with solutions</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/questions?exam=CUET PG" className={styles.recentItem}>
-                    <span className={styles.recentTitle}>📝 CUET PG Practice Questions</span>
-                    <span className={styles.recentDate}>Topic-wise preparation</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/resources" className={styles.recentItem}>
-                    <span className={styles.recentTitle}>📄 Download PYQ Papers (PDF)</span>
-                    <span className={styles.recentDate}>Free downloads</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className={styles.recentItem}>
-                    <span className={styles.recentTitle}>🏫 About Maarula Classes</span>
-                    <span className={styles.recentDate}>India's top MCA coaching</span>
-                  </Link>
-                </li>
-              </ul>
+              <h3 className={styles.widgetTitle}>On this page</h3>
+              <nav aria-label="Table of contents">
+                <ul className={styles.tocList}>
+                  {toc.map((h) => (
+                    <li
+                      key={h.id}
+                      className={h.level === 3 ? styles.tocH3 : styles.tocH2}
+                    >
+                      <a href={`#${h.id}`}>{h.text}</a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             </div>
-          </aside>
-        </div>
+          )}
+
+          <div className={styles.widget}>
+            <h3 className={styles.widgetTitle}>Recent posts</h3>
+            <ul className={styles.recentList}>
+              {recentPosts.map((r) => (
+                <li key={r._id}>
+                  <Link href={`/articles/${r.slug}`}
+                    className={styles.recentItem}
+                  >
+                    <span className={styles.recentTitle}>{r.title}</span>
+                    <time className={styles.recentDate}>
+                      {new Date(r.createdAt).toLocaleDateString()}
+                    </time>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Internal linking widget for SEO */}
+          <div className={styles.widget}>
+            <h3 className={styles.widgetTitle}>Quick Links</h3>
+            <ul className={styles.recentList}>
+              <li>
+                <Link href="/questions" className={styles.recentItem}>
+                  <span className={styles.recentTitle}>📚 Question Bank — 17 Years PYQs</span>
+                  <span className={styles.recentDate}>NIMCET, CUET PG & More</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/questions?exam=NIMCET" className={styles.recentItem}>
+                  <span className={styles.recentTitle}>🎯 NIMCET Previous Year Questions</span>
+                  <span className={styles.recentDate}>Practice with solutions</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/questions?exam=CUET PG" className={styles.recentItem}>
+                  <span className={styles.recentTitle}>📝 CUET PG Practice Questions</span>
+                  <span className={styles.recentDate}>Topic-wise preparation</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/resources" className={styles.recentItem}>
+                  <span className={styles.recentTitle}>📄 Download PYQ Papers (PDF)</span>
+                  <span className={styles.recentDate}>Free downloads</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className={styles.recentItem}>
+                  <span className={styles.recentTitle}>🏫 About Maarula Classes</span>
+                  <span className={styles.recentDate}>India's top MCA coaching</span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </aside>
       </div>
-    </>
+    </div>
   );
 }
