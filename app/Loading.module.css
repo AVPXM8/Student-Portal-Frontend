@@ -1,0 +1,105 @@
+.loaderWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  width: 100%;
+}
+
+.logoContainer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulsingCircle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF5E0E, #FFB800);
+  opacity: 0.2;
+  animation: pulseInfinite 2s ease-in-out infinite;
+}
+
+.pulsingCircleDelayed {
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF5E0E, #FFB800);
+  opacity: 0.15;
+  animation: pulseInfinite 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes pulseInfinite {
+  0% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.1; }
+  100% { transform: scale(0.8); opacity: 0.3; }
+}
+
+.loaderLogo {
+  position: relative;
+  z-index: 1;
+  animation: floatLogo 3s ease-in-out infinite;
+}
+
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.loadingText {
+  margin-top: 24px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dot {
+  animation: dotFade 1.4s infinite;
+  opacity: 0;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotFade {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.progressBar {
+  margin-top: 16px;
+  width: 200px;
+  height: 4px;
+  background: #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, #FF5E0E, #FFB800);
+  border-radius: 10px;
+  animation: progressMove 1.5s infinite ease-in-out;
+}
+
+@keyframes progressMove {
+  0% { left: -30%; width: 30%; }
+  50% { width: 50%; }
+  100% { left: 100%; width: 30%; }
+}

@@ -6,6 +6,7 @@ import useMathJax from '@/hooks/useMathJax';
 const MathPreview = ({ latexString = '', className = '', style = {} }) => {
   // Guard: don’t let MathJax mutate during the very first paint
   const [mounted, setMounted] = React.useState(false);
+  const containerRef = React.useRef(null);
   React.useEffect(() => setMounted(true), []);
 
   const isAlreadyKaTeX = typeof latexString === 'string' && (latexString.includes('class="katex"') || latexString.includes('class=\'katex\''));
@@ -29,10 +30,11 @@ const MathPreview = ({ latexString = '', className = '', style = {} }) => {
       .replace(/(\$|\\\)|\\\])/g, '$1 ');
   }, [latexString, isAlreadyKaTeX]);
 
-  useMathJax(mounted && !isAlreadyKaTeX ? [cleaned] : []);
+  useMathJax(mounted && !isAlreadyKaTeX ? [cleaned] : [], containerRef);
 
   return (
     <div
+      ref={containerRef}
       className={className}
       style={style}
       dangerouslySetInnerHTML={{ __html: cleaned }}

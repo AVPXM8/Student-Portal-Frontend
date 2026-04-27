@@ -245,7 +245,7 @@ const TopicAccordionCard = ({ topic, exam, subject }) => {
 /* -------------------------------------------------------------------------- */
 /*                               PAGE COMPONENT                                */
 /* -------------------------------------------------------------------------- */
-const QuestionLibraryPage = ({ initialQuestions = [], initialTotalDocs = 0, initialTotalPages = 1 }) => {
+const QuestionLibraryPage = ({ initialQuestions = [], initialTotalDocs = 0, initialTotalPages = 1, initialPage = 1 }) => {
   // Data + UI state
   const [questions, setQuestions] = useState(initialQuestions);
   const [loading, setLoading] = useState(initialQuestions.length === 0);
@@ -260,7 +260,7 @@ const QuestionLibraryPage = ({ initialQuestions = [], initialTotalDocs = 0, init
   const pathname = usePathname();
   const [totalDocs, setTotalDocs] = useState(initialTotalDocs);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [limit, setLimit] = useState(10);
 
   // Search input (uncommitted text)

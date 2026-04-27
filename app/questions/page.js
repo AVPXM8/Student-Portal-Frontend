@@ -96,6 +96,7 @@ export default async function Page({ params, searchParams }) {
         initialQuestions={initialQuestions}
         initialTotalDocs={initialTotalDocs}
         initialTotalPages={initialTotalPages}
+        initialPage={page}
       />
     </>
   );

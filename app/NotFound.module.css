@@ -1,0 +1,111 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 40px 20px;
+  text-align: center;
+  font-family: var(--font-outfit), sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.bgBlur {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 94, 14, 0.15) 0%, transparent 70%);
+  filter: blur(60px);
+  z-index: -1;
+  animation: floatBG 10s ease-in-out infinite alternate;
+}
+
+@keyframes floatBG {
+  from { transform: translate(-20%, -20%); }
+  to { transform: translate(20%, 20%); }
+}
+
+.glitch {
+  font-size: clamp(5rem, 15vw, 10rem);
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #FF5E0E, #FFB800);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards 0.3s;
+}
+
+.description {
+  color: #64748B;
+  max-width: 500px;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards 0.5s;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards 0.7s;
+}
+
+.primaryBtn {
+  padding: 14px 32px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF5E0E, #FFB800);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 20px rgba(255, 94, 14, 0.2);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(255, 94, 14, 0.3);
+}
+
+.secondaryBtn {
+  padding: 14px 32px;
+  border-radius: 14px;
+  border: 2px solid #E2E8F0;
+  color: #64748B;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.secondaryBtn:hover {
+  border-color: #FF5E0E;
+  color: #FF5E0E;
+  transform: translateY(-3px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
