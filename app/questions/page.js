@@ -87,6 +87,9 @@ export default async function Page({ params, searchParams }) {
     ],
   };
 
+  const pageStr = resolvedSearchParams.page || '1';
+  const page = parseInt(pageStr, 10);
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
