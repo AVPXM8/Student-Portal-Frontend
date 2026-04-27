@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowUp } from 'lucide-react';
 import { FaGooglePlay } from 'react-icons/fa';
 import styles from './Footer.module.css';
@@ -34,10 +35,13 @@ const Footer = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.footerTop}>
-        <img 
+        <Image 
           src="https://res.cloudinary.com/dwmj6up6j/image/upload/f_auto,q_auto,w_100/v1752683439/maarulalogo_lywhdo.png" 
           alt="Maarula Classes Logo" 
-          className={styles.footerLogo} 
+          className={styles.footerLogo}
+          width={100}
+          height={100}
+          loading="lazy"
         />
         <h3 className={styles.footerTitle}>MAARULA CLASSES</h3>
         <p className={styles.footerSubtitle}>MCA Entrance Coaching</p>

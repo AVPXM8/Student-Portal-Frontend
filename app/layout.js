@@ -42,8 +42,10 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         
-        <Script id="mathjax-config" strategy="beforeInteractive">
+        <Script id="mathjax-config" strategy="lazyOnload">
           {`
             window.MathJax = {
               tex: {

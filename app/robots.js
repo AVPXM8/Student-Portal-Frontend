@@ -13,6 +13,5 @@ export default function robots() {
       },
     ],
     sitemap: "https://question.maarula.in/sitemap.xml",
-    host: "https://question.maarula.in",
   };
 }

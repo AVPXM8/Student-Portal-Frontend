@@ -51,7 +51,7 @@ export default async function sitemap() {
     console.error('Sitemap: Failed to fetch dynamic URLs', err.message);
   }
 
-  // Exam Resource pages
+  // Exam Resource pages (e.g., /resources/NIMCET)
   const examRoutes = Object.keys(PYQ_DATA).map((exam) => ({
     url: `${SITE_URL}/resources/${encodeURIComponent(exam)}`,
     lastModified: new Date(),
@@ -59,5 +59,20 @@ export default async function sitemap() {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...postRoutes, ...questionRoutes, ...examRoutes];
+  // Paper/exam/year pages (e.g., /paper/NIMCET/2024) — Fix H3
+  const paperRoutes = [];
+  Object.entries(PYQ_DATA).forEach(([exam, data]) => {
+    if (data.yearwise?.length) {
+      data.yearwise.forEach((paper) => {
+        paperRoutes.push({
+          url: `${SITE_URL}/paper/${encodeURIComponent(exam)}/${encodeURIComponent(paper.year)}`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        });
+      });
+    }
+  });
+
+  return [...staticRoutes, ...postRoutes, ...questionRoutes, ...examRoutes, ...paperRoutes];
 }

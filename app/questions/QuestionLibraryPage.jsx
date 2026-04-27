@@ -245,10 +245,10 @@ const TopicAccordionCard = ({ topic, exam, subject }) => {
 /* -------------------------------------------------------------------------- */
 /*                               PAGE COMPONENT                                */
 /* -------------------------------------------------------------------------- */
-const QuestionLibraryPage = () => {
+const QuestionLibraryPage = ({ initialQuestions = [], initialTotalDocs = 0, initialTotalPages = 1 }) => {
   // Data + UI state
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState(initialQuestions);
+  const [loading, setLoading] = useState(initialQuestions.length === 0);
   const [filterOptions, setFilterOptions] = useState({ exams: [], subjects: [], years: [] });
   const [filterLoading, setFilterLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -258,8 +258,8 @@ const QuestionLibraryPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [totalDocs, setTotalDocs] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(initialTotalDocs);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -415,7 +415,7 @@ const QuestionLibraryPage = () => {
       });
 
     return () => controller.abort();
-  }, [currentAppliedFilters]);
+  }, [currentAppliedFilters]); // Make sure this runs on filter changes
 
   // Clamp URL page to server-corrected page
   useEffect(() => {

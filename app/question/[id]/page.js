@@ -13,6 +13,7 @@
  */
 
 import Link from 'next/link';
+import Image from 'next/image';
 import Breadcrumb from '@/components/Breadcrumb';
 import ServerMathContent from '@/components/ServerMathContent';
 import QuestionInteractions from './QuestionInteractions';
@@ -313,11 +314,14 @@ export default async function Page({ params, searchParams }) {
 
             {/* Question image (if any) */}
             {question.questionImageURL && (
-              <img
+              <Image
                 src={question.questionImageURL}
                 alt={`Diagram for ${examLabel} ${yearLabel} ${subjectLabel} question`}
                 className={styles.mainImage}
+                width={800}
+                height={400}
                 loading="lazy"
+                style={{ width: '100%', height: 'auto' }}
               />
             )}
 
