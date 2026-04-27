@@ -27,6 +27,9 @@ export const metadata = {
     apple: "/apple-icon.png",
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: "dyhhcuWG_4e0cByNd_RKXKsAldmz2g0kcK2a_yCKvlE",
+  },
 };
 
 
